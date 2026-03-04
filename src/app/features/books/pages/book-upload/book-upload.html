@@ -1,18 +1,23 @@
+<nav class="navbar">
+  <h1>Bookstore</h1>
+  <button [routerLink]="['']" class="nav-btn">Books</button>
+</nav>
+
 <div class="upload-form">
   <h2>Upload Book</h2>
   <form [formGroup]="bookForm" (ngSubmit)="submitForm()">
     <label>
-      Title:
-      <input type="text" formControlName="title" />
+      <span>Title</span>
+      <input type="text" formControlName="title" placeholder="Enter book title" />
     </label>
 
     <label>
-      Author:
-      <input type="text" formControlName="author" />
+      <span>Author</span>
+      <input type="text" formControlName="author" placeholder="Enter author name" />
     </label>
 
     <label>
-      Category:
+      <span>Category</span>
       <select formControlName="category">
         <option value="Technical">Technical</option>
         <option value="Self Improvement">Self Improvement</option>
@@ -20,12 +25,12 @@
     </label>
 
     <label>
-      Book Cover Image:
+      <span>Book Cover Image</span>
       <input type="file" (change)="onFileChange($event, 'image')" accept="image/*" />
     </label>
 
     <label>
-      Book PDF/File:
+      <span>Book PDF/File</span>
       <input type="file" (change)="onFileChange($event, 'file')" accept=".pdf,.doc,.docx" />
     </label>
 
