@@ -29,8 +29,11 @@ export class BookGrid implements OnInit {
     });
   }
 
-  downloadBook(book: Book) {
-    window.open(book.filePath, '_blank');
+  downloadBook(book: any) {
+    const link = document.createElement('a');
+    link.href = 'http://localhost:8080/uploads/files/' + book.filePath.split('/').pop();
+    link.download = book.title + '.pdf';
+    link.click();
   }
 
 }

@@ -1,21 +1,48 @@
 <nav class="navbar">
   <h1>Bookstore</h1>
-  <button [routerLink]="['/upload-book']">Upload Book</button>
+
+  <div class="search-wrapper">
+    <input
+      type="text"
+      placeholder="Search books..."
+      class="nav-search"
+    />
+    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+  </div>
+
+  <button [routerLink]="['/upload-book']" class="nav-btn" >Upload Book</button>
 </nav>
 
-<div class="grid">
-  @if (loading()) {
-    <p>Loading books...</p>
-  } @else {
-    @for (book of books(); track book.id) {
-      <div class="card">
-        <img [src]="'/assets/images/' + book.imageSlug" alt="{{ book.title }}" />
-        <h3>{{ book.title }}</h3>
-        <p>{{ book.author }}</p>
-        <button (click)="downloadBook(book)">Download</button>
-      </div>
-    } @empty {
-      <p>No books available.</p>
+<section class="container">
+
+  <div class="hero-container">
+    <img
+      ngSrc="/images/premium_photo-1703701579660-8481915a7991.avif"
+      width="1200"
+      height="800"
+      alt="Hero image">
+  </div>
+
+  <div class="grid">
+    @if (loading()) {
+      <p>Loading books...</p>
+    } @else {
+      @for (book of books(); track book.id) {
+        <div class="card">
+          <div class="card-image">
+            <img [src]="'http://localhost:8080/uploads/images/' + book.imageSlug" alt="{{ book.title }}" />
+          </div>
+          <div class="card-content">
+            <h3>{{ book.title }}</h3>
+            <p>{{ book.author }}</p>
+          </div>
+          <button (click)="downloadBook(book)">Download</button>
+        </div>
+      } @empty {
+        <p>No books available.</p>
+      }
     }
-  }
-</div>
+  </div>
+
+</section>
+
