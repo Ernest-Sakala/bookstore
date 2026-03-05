@@ -1,0 +1,62 @@
+<nav class="navbar">
+  <h1>Bookstore</h1>
+  <button [routerLink]="['']" class="nav-btn">Books Home</button>
+  <button [routerLink]="['/upload-book']" class="nav-btn">Upload Book</button>
+</nav>
+
+<div class="table-container">
+
+  @if (loading()) {
+    <p>Loading books...</p>
+  } @else {
+
+    <table class="book-table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Image</th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Category</th>
+        <th>Download</th>
+        <th>Actions</th> <!-- new column -->
+      </tr>
+      </thead>
+
+      <tbody>
+        @for (book of books(); track book.id) {
+          <tr>
+            <td>{{ book.id }}</td>
+
+            <td>
+              <img
+                [src]="'http://localhost:8080/uploads/images/' + book.imageSlug"
+                width="50"
+                height="70"
+              />
+            </td>
+
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.category }}</td>
+
+            <td>
+              <button (click)="downloadBook(book)">Download</button>
+            </td>
+
+            <td>
+              <button (click)="editBook(book)">Edit</button>
+              <button (click)="deleteBook(book)">Delete</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7">No books found</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+  }
+
+</div>

@@ -91,4 +91,18 @@ export class BookService {
       }
     });
   }
+
+
+  deleteBook(id: number): Observable<boolean> {
+    return this.apollo.mutate<{ deleteBook: boolean }>({
+      mutation: gql`
+        mutation DeleteBook($id: ID!) {
+          deleteBook(id: $id)
+        }
+      `,
+      variables: { id }
+    }).pipe(
+      map(result => result.data?.deleteBook ?? false)
+    );
+  }
 }

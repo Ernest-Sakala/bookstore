@@ -1,0 +1,145 @@
+/* Navbar Styling */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #1e88e5;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 0 0 8px 8px;
+}
+
+.navbar h1 {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.nav-btn {
+  background-color: white;
+  color: #1e88e5;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+  background-color: #f1f1f1;
+}
+
+
+
+/** Table CSS **/
+
+
+.table-container {
+  padding: 30px;
+  max-width: 1090px;
+  margin: 0 auto;
+}
+
+.book-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.book-table th,
+.book-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.book-table th {
+  background: #f4f4f4;
+}
+
+.book-table img {
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.book-table tr:hover {
+  background: #f9f9f9;
+}
+
+
+.book-table button {
+  margin-right: 5px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Download Button */
+.book-table button:nth-child(1) {
+  background-color: #10b981; /* green */
+  color: white;
+}
+.book-table button:nth-child(1):hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+}
+
+/* Edit Button */
+.book-table button:nth-child(2) {
+  background-color: #3b82f6; /* blue */
+  color: white;
+}
+.book-table button:nth-child(2):hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* Delete Button */
+.book-table button:nth-child(3) {
+  background-color: #ef4444; /* red */
+  color: white;
+}
+.book-table button:nth-child(3):hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+
+
+
+.table-container {
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.book-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.book-table th,
+.book-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.book-table th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
+.book-table img {
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.book-table tr:hover {
+  background-color: #f9fafb;
+}
