@@ -35,8 +35,9 @@ export const BOOKS_QUERY = gql`
       title
       author
       category
+      imageSlug
+      filePath
       price
-      coverImageUrl
       description
     }
   }
@@ -140,7 +141,8 @@ export const SEARCH_BOOKS = gql`
       title
       author
       category
-      price
+      imageSlug
+      filePath
     }
   }
 `;
