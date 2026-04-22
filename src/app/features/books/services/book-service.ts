@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { map, Observable } from 'rxjs';
-import { DeepPartial } from '@apollo/client/utilities';
-import { SEARCH_BOOKS, BOOK_BY_ID_QUERY } from '../../../core/graphql/operations';
-
+import { BOOKS_QUERY, BOOK_BY_ID_QUERY } from '../../../core/graphql/operations';
 
 export interface Book {
   id: number;
@@ -16,128 +14,63 @@ export interface Book {
   description?: string;
 }
 
+export interface BookPage {
+  books: Book[];
+  totalElements: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+}
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class BookService {
 
   constructor(private apollo: Apollo) {}
 
-  getBooks(): Observable<Book[]> {
-    return this.apollo
-      .watchQuery<{ books: DeepPartial<Book>[] }>({
-        query: gql`
-        query {
-          books {
-            id
-            title
-            author
-            category
-            imageSlug
-            filePath
-          }
-        }
-      `,
-      })
-      .valueChanges.pipe(
-        map(result => {
-          const books = result.data?.books ?? [];
-          return books.map(b => ({
-            id: b.id ?? 0,                  // provide default 0 if undefined
-            title: b.title ?? 'Unknown',
-            author: b.author ?? 'Unknown',
-            category: b.category ?? 'Unknown',
-            imageSlug: b.imageSlug ?? '',
-            filePath: b.filePath ?? '',
-          }));
-        })
-      );
+  getBooks(page = 0, size = 8): Observable<BookPage> {
+    return this.apollo.query<{ books: BookPage }>({
+      query: BOOKS_QUERY,
+      variables: { page, size },
+      fetchPolicy: 'network-only',
+    }).pipe(map(r => r.data!.books as unknown as BookPage));
   }
 
-
-  uploadBook(
-    title: string,
-    author: string,
-    category: string,
-    image?: File | undefined | null,
-    file?: File | undefined | null,
-  ) {
-    return this.apollo.mutate({
-      mutation: gql`
-      mutation uploadBook(
-        $title: String!
-        $author: String!
-        $category: String!
-        $image: Upload!
-        $file: Upload!
-      ) {
-        uploadBook(
-          title: $title
-          author: $author
-          category: $category
-          image: $image
-          file: $file
-        ) {
-          id
-          title
-          author
-        }
-      }
-    `,
-      variables: {
-        title,
-        author,
-        category,
-        image,
-        file
-      }
-    });
+  searchBooks(search: string, page = 0, size = 8): Observable<BookPage> {
+    return this.apollo.query<{ books: BookPage }>({
+      query: BOOKS_QUERY,
+      variables: { search, page, size },
+      fetchPolicy: 'network-only',
+    }).pipe(map(r => r.data!.books as unknown as BookPage));
   }
-
-
-  deleteBook(id: number): Observable<boolean> {
-    return this.apollo.mutate<{ deleteBook: boolean }>({
-      mutation: gql`
-        mutation DeleteBook($id: ID!) {
-          deleteBook(id: $id)
-        }
-      `,
-      variables: { id }
-    }).pipe(
-      map(result => result.data?.deleteBook ?? false)
-    );
-  }
-
 
   getBookById(id: string | number): Observable<Book | null> {
-    return this.apollo.query<{ book: DeepPartial<Book> | null }>({
+    return this.apollo.query<{ book: Book | null }>({
       query: BOOK_BY_ID_QUERY,
       variables: { id },
       fetchPolicy: 'network-only',
-    }).pipe(
-      map(res => {
-        const b = res.data?.book;
-        if (!b) return null;
-        return {
-          id:          b.id as unknown as number,
-          title:       b.title       ?? 'Unknown',
-          author:      b.author      ?? 'Unknown',
-          category:    b.category    ?? '',
-          imageSlug:   b.imageSlug   ?? '',
-          filePath:    b.filePath    ?? '',
-          price:       b.price       ?? undefined,
-          description: b.description ?? undefined,
-        };
-      })
-    );
+    }).pipe(map(r => r.data?.book ?? null));
   }
 
-  searchBooks(search: string) {
-    return this.apollo.query<{ books: any[] }>({
-      query: SEARCH_BOOKS,
-      variables: { search },
-      fetchPolicy: 'network-only'
+  uploadBook(title: string, author: string, category: string,
+             image?: File | null, file?: File | null, price?: number) {
+    return this.apollo.mutate({
+      mutation: gql`
+        mutation uploadBook($title: String!, $author: String!, $category: String!,
+                            $image: Upload!, $file: Upload!, $price: Float) {
+          uploadBook(title: $title, author: $author, category: $category,
+                     image: $image, file: $file, price: $price) {
+            id title author price
+          }
+        }
+      `,
+      variables: { title, author, category, image, file, price },
     });
+  }
+
+  deleteBook(id: number): Observable<boolean> {
+    return this.apollo.mutate<{ deleteBook: boolean }>({
+      mutation: gql`mutation DeleteBook($id: ID!) { deleteBook(id: $id) }`,
+      variables: { id },
+    }).pipe(map(r => r.data?.deleteBook ?? false));
   }
 }

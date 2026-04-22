@@ -1,88 +1,83 @@
-import {Component, OnInit, signal} from '@angular/core';
-import {Router, RouterLink} from '@angular/router';
-import {Book, BookService} from '../../services/book-service';
+import { Component, OnInit, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
+import { Book, BookPage, BookService } from '../../services/book-service';
+import { Pagination } from '../../../../shared/pagination/pagination';
+
+const PAGE_SIZE = 10;
 
 @Component({
   selector: 'app-books-list',
-  imports: [
-    RouterLink
-  ],
+  imports: [RouterLink, Pagination],
   templateUrl: './books-list.html',
   styleUrl: './books-list.scss',
 })
 export class BooksList implements OnInit {
 
-  books = signal<Book[]>([]);
-  loading = signal(true);
+  books        = signal<Book[]>([]);
+  loading      = signal(true);
+
+  currentPage    = signal(0);
+  totalPages     = signal(0);
+  totalElements  = signal(0);
+  readonly pageSize = PAGE_SIZE;
 
   constructor(private bookService: BookService, private router: Router) {}
 
-
   ngOnInit() {
-    this.loadBooks();
+    this.loadBooks(0);
   }
 
-  loadBooks() {
+  loadBooks(page = 0) {
     this.loading.set(true);
-    this.bookService.getBooks().subscribe({
-      next: (data) => {
-        this.books.set([...data]);
+    this.bookService.getBooks(page, PAGE_SIZE).subscribe({
+      next: (p: BookPage) => {
+        this.books.set(p.books);
+        this.currentPage.set(p.currentPage);
+        this.totalPages.set(p.totalPages);
+        this.totalElements.set(p.totalElements);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => this.loading.set(false),
     });
   }
 
+  onPageChange(page: number) {
+    this.loadBooks(page);
+  }
 
   downloadBook(book: Book) {
     const link = document.createElement('a');
-    link.href = `http://localhost:8080/uploads/books/${book.filePath}`;
-    link.download = book.filePath;
+    link.href = `http://localhost:8080/uploads/files/${book.filePath.split('/').pop()}`;
+    link.download = book.title + '.pdf';
     link.click();
   }
 
   editBook(book: Book) {
-    // Navigate to edit page, e.g., /edit-book/:id
     this.router.navigate(['/edit-book', book.id]);
   }
 
   deleteBook(book: Book) {
     Swal.fire({
       title: `Delete "${book.title}"?`,
-      text: "This action cannot be undone.",
+      text: 'This action cannot be undone.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes, delete it!',
       cancelButtonText: 'Cancel',
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6366f1',
     }).then((result) => {
-      if (result.isConfirmed) {
-        this.bookService.deleteBook(book.id).subscribe({
-          next: (success) => {
-            if (success) {
-              Swal.fire(
-                'Deleted!',
-                `"${book.title}" has been deleted.`,
-                'success'
-              );
-              // Replace the books array to trigger Angular reactivity
-              const updatedBooks = this.books().filter(b => b.id !== book.id);
-              this.books.set([...updatedBooks]);
-            } else {
-              Swal.fire(
-                'Error',
-                `Failed to delete "${book.title}".`,
-                'error'
-              );
-            }
-          },
-          error: (err) => {
-            Swal.fire('Error', `Something went wrong: ${err.message}`, 'error');
+      if (!result.isConfirmed) return;
+      this.bookService.deleteBook(book.id).subscribe({
+        next: (success) => {
+          if (success) {
+            Swal.fire({ title: 'Deleted!', icon: 'success', timer: 1500, showConfirmButton: false });
+            this.loadBooks(this.currentPage());
           }
-        });
-      }
+        },
+        error: (err) => Swal.fire('Error', err.message, 'error'),
+      });
     });
   }
 }

@@ -6,7 +6,8 @@ import { Apollo } from 'apollo-angular';
 import Swal from 'sweetalert2';
 
 import { AuthService } from '../../../core/service/auth';
-import { Book, BookService } from '../../books/services/book-service';
+import { Book, BookPage, BookService } from '../../books/services/book-service';
+import { Pagination } from '../../../shared/pagination/pagination';
 import { AdminNavbar } from '../navbar/admin-navbar';
 import { Sidebar, AdminSection } from '../../../shared/sidebar/sidebar';
 import {
@@ -38,7 +39,7 @@ export const ORDER_STATUSES = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [AdminNavbar, Sidebar, ReactiveFormsModule, DecimalPipe, DatePipe, NgClass],
+  imports: [AdminNavbar, Sidebar, ReactiveFormsModule, DecimalPipe, DatePipe, NgClass, Pagination],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   standalone: true,
@@ -56,14 +57,19 @@ export class AdminDashboard implements OnInit {
   sidebarCollapsed = signal(false);
 
   /* ── Books ── */
-  books   = signal<Book[]>([]);
-  loading = signal(false);
+  books         = signal<Book[]>([]);
+  loading       = signal(false);
+  booksPage     = signal(0);
+  booksTotalPages    = signal(0);
+  booksTotalElements = signal(0);
+  readonly booksPageSize = 10;
 
   /* ── Upload form ── */
   uploadForm = this.fb.group({
     title:    ['', Validators.required],
     author:   ['', Validators.required],
     category: ['', Validators.required],
+    price:    [null as number | null, [Validators.required, Validators.min(0)]],
     image:    [null as File | null, Validators.required],
     file:     [null as File | null, Validators.required],
   });
@@ -85,17 +91,27 @@ export class AdminDashboard implements OnInit {
     this.loadBooks();
   }
 
-  loadBooks() {
+  loadBooks(page = 0) {
     this.loading.set(true);
-    this.bookService.getBooks().subscribe({
-      next: (data) => { this.books.set(data); this.loading.set(false); },
-      error: ()     => this.loading.set(false),
+    this.bookService.getBooks(page, this.booksPageSize).subscribe({
+      next: (p: BookPage) => {
+        this.books.set(p.books);
+        this.booksPage.set(p.currentPage);
+        this.booksTotalPages.set(p.totalPages);
+        this.booksTotalElements.set(p.totalElements);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
     });
+  }
+
+  onBooksPageChange(page: number) {
+    this.loadBooks(page);
   }
 
   setSection(section: AdminSection) {
     this.activeSection.set(section);
-    if (section === 'books')  this.loadBooks();
+    if (section === 'books')  this.loadBooks(0);
     if (section === 'orders') this.loadOrders();
   }
 
@@ -123,8 +139,8 @@ export class AdminDashboard implements OnInit {
     this.uploading.set(true);
     this.uploadSuccess.set('');
     this.uploadError.set('');
-    const { title, author, category, image, file } = this.uploadForm.getRawValue();
-    this.bookService.uploadBook(title!, author!, category!, image, file).subscribe({
+    const { title, author, category, price, image, file } = this.uploadForm.getRawValue();
+    this.bookService.uploadBook(title!, author!, category!, image, file, price ?? undefined).subscribe({
       next: () => {
         this.uploading.set(false);
         this.uploadSuccess.set(`"${title}" uploaded successfully.`);

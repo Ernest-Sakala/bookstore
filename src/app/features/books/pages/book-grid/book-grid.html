@@ -30,7 +30,7 @@
   <section class="books-section">
     <div class="section-header">
       <h2>All Books</h2>
-      <span class="book-count">{{ books().length }} title{{ books().length === 1 ? '' : 's' }}</span>
+      <span class="book-count">{{ totalElements() }} title{{ totalElements() === 1 ? '' : 's' }}</span>
     </div>
 
     @if (loading()) {
@@ -99,6 +99,14 @@
         </div>
       }
     }
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [totalElements]="totalElements()"
+      [pageSize]="pageSize"
+      (pageChange)="onPageChange($event)"
+    />
+
   </section>
 
 </main>

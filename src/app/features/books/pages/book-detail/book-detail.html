@@ -55,7 +55,7 @@
         <p class="book-author">by <strong>{{ book()!.author }}</strong></p>
 
         @if (book()!.price) {
-          <div class="price-tag">${{ book()!.price! | number:'1.2-2' }}</div>
+          <div class="price-tag">K{{ book()!.price! | number:'1.2-2' }}</div>
         } @else {
           <div class="price-tag free">Free</div>
         }

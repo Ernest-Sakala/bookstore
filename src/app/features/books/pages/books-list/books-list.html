@@ -59,4 +59,12 @@
 
   }
 
+  <app-pagination
+    [currentPage]="currentPage()"
+    [totalPages]="totalPages()"
+    [totalElements]="totalElements()"
+    [pageSize]="pageSize"
+    (pageChange)="onPageChange($event)"
+  />
+
 </div>

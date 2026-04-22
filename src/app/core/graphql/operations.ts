@@ -44,16 +44,10 @@ export const BOOK_BY_ID_QUERY = gql`
 `;
 
 export const BOOKS_QUERY = gql`
-  query Books($search: String) {
-    books(search: $search) {
-      id
-      title
-      author
-      category
-      imageSlug
-      filePath
-      price
-      description
+  query Books($search: String, $page: Int, $size: Int) {
+    books(search: $search, page: $page, size: $size) {
+      books { id title author category imageSlug filePath price description }
+      totalElements totalPages currentPage pageSize
     }
   }
 `;
@@ -196,14 +190,10 @@ export const UPDATE_ORDER_STATUS_MUTATION = gql`
 `;
 
 export const SEARCH_BOOKS = gql`
-  query SearchBooks($search: String) {
-    books(search: $search) {
-      id
-      title
-      author
-      category
-      imageSlug
-      filePath
+  query SearchBooks($search: String, $page: Int, $size: Int) {
+    books(search: $search, page: $page, size: $size) {
+      books { id title author category imageSlug filePath price description }
+      totalElements totalPages currentPage pageSize
     }
   }
 `;

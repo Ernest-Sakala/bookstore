@@ -52,7 +52,7 @@
                   </div>
                   <div class="item-right">
                     <span class="item-qty">×{{ item.quantity }}</span>
-                    <span class="item-subtotal">${{ item.lineTotal | number:'1.2-2' }}</span>
+                    <span class="item-subtotal">K{{ item.lineTotal | number:'1.2-2' }}</span>
                   </div>
                 </div>
               }
@@ -93,7 +93,7 @@
             <div class="summary-lines">
               <div class="sum-row">
                 <span>Subtotal ({{ cart.totalItems }} item{{ cart.totalItems === 1 ? '' : 's' }})</span>
-                <span>${{ cart.totalPrice | number:'1.2-2' }}</span>
+                <span>K{{ cart.totalPrice | number:'1.2-2' }}</span>
               </div>
               <div class="sum-row">
                 <span>Delivery</span>
@@ -105,7 +105,7 @@
 
             <div class="sum-total">
               <span>Total</span>
-              <span class="total-val">${{ cart.totalPrice | number:'1.2-2' }}</span>
+              <span class="total-val">K{{ cart.totalPrice | number:'1.2-2' }}</span>
             </div>
 
             <button

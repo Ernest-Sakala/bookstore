@@ -202,6 +202,20 @@
               }
             </div>
 
+            <div class="field">
+              <label>Price (ZMW)</label>
+              <div class="input-group price-wrap" [class.invalid]="uploadForm.get('price')!.invalid && uploadForm.get('price')!.touched">
+                <span class="price-symbol">K</span>
+                <input type="number" formControlName="price" placeholder="0.00" min="0" step="0.01" />
+              </div>
+              @if (uploadForm.get('price')!.touched && uploadForm.get('price')!.errors?.['required']) {
+                <span class="field-error">Price is required.</span>
+              }
+              @if (uploadForm.get('price')!.touched && uploadForm.get('price')!.errors?.['min']) {
+                <span class="field-error">Price must be 0 or more.</span>
+              }
+            </div>
+
             <div class="form-row">
               <div class="field">
                 <label>Cover Image</label>
@@ -276,7 +290,7 @@
     @if (activeSection() === 'books') {
       <div class="section-header">
         <h1>Manage Books</h1>
-        <p>{{ books().length }} book{{ books().length === 1 ? '' : 's' }} in the catalogue</p>
+        <p>{{ booksTotalElements() }} book{{ booksTotalElements() === 1 ? '' : 's' }} in the catalogue</p>
       </div>
 
       <div class="table-card">
@@ -348,6 +362,18 @@
                 }
               </tbody>
             </table>
+          </div>
+        }
+
+        @if (booksTotalPages() > 1) {
+          <div style="padding: 0 16px 16px">
+            <app-pagination
+              [currentPage]="booksPage()"
+              [totalPages]="booksTotalPages()"
+              [totalElements]="booksTotalElements()"
+              [pageSize]="booksPageSize"
+              (pageChange)="onBooksPageChange($event)"
+            />
           </div>
         }
 
@@ -430,7 +456,7 @@
                     <td>
                       <span class="item-count-badge">{{ order.itemCount }} item{{ order.itemCount === 1 ? '' : 's' }}</span>
                     </td>
-                    <td class="td-amount">${{ order.totalAmount | number:'1.2-2' }}</td>
+                    <td class="td-amount">K{{ order.totalAmount | number:'1.2-2' }}</td>
                     <td>
                       <span class="status-badge" [ngClass]="statusColor(order.status)">
                         {{ order.status }}
@@ -491,16 +517,16 @@
                                 <tr>
                                   <td class="item-title-cell">{{ item.bookTitle }}</td>
                                   <td class="td-muted">{{ item.bookAuthor }}</td>
-                                  <td>${{ item.bookPrice | number:'1.2-2' }}</td>
+                                  <td>K{{ item.bookPrice | number:'1.2-2' }}</td>
                                   <td><span class="qty-pill">×{{ item.quantity }}</span></td>
-                                  <td class="td-amount">${{ item.lineTotal | number:'1.2-2' }}</td>
+                                  <td class="td-amount">K{{ item.lineTotal | number:'1.2-2' }}</td>
                                 </tr>
                               }
                             </tbody>
                             <tfoot>
                               <tr>
                                 <td colspan="4" class="tfoot-label">Order Total</td>
-                                <td class="td-amount total-row">${{ order.totalAmount | number:'1.2-2' }}</td>
+                                <td class="td-amount total-row">K{{ order.totalAmount | number:'1.2-2' }}</td>
                               </tr>
                             </tfoot>
                           </table>
