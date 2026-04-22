@@ -1,0 +1,134 @@
+<app-navbar />
+
+<main class="checkout-page">
+
+  <!-- Order placed success state -->
+  @if (placed()) {
+    <div class="success-card">
+      <div class="success-icon">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="20" fill="rgba(99,102,241,0.1)"/>
+          <path d="M12 20l6 6 10-12" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1>Order Placed!</h1>
+      @if (orderId()) {
+        <p class="order-id">Order #{{ orderId() }}</p>
+      }
+      <p>Thank you for your purchase. Your books are ready.</p>
+      <a routerLink="/" class="btn-home">Back to Store</a>
+    </div>
+  } @else {
+
+    <div class="checkout-layout">
+
+      <!-- Left: order review -->
+      <div class="review-col">
+        <h1>Checkout</h1>
+
+        <div class="section-card">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M1.5 1.5h2l2.5 8h7l2-5.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="7" cy="13" r="1" fill="currentColor"/>
+              <circle cx="12" cy="13" r="1" fill="currentColor"/>
+            </svg>
+            Order Items
+          </h2>
+
+          @if (cartService.cart(); as cart) {
+            <div class="order-items">
+              @for (item of cart.items; track item.id) {
+                <div class="order-item">
+                  <div class="item-img">
+                    <img
+                      [src]="item.coverImageUrl ? 'http://localhost:8080/uploads/images/' + item.coverImageUrl : ''"
+                      [alt]="item.bookTitle"
+                    />
+                  </div>
+                  <div class="item-details">
+                    <span class="item-title">{{ item.bookTitle }}</span>
+                    <span class="item-author">{{ item.bookAuthor }}</span>
+                  </div>
+                  <div class="item-right">
+                    <span class="item-qty">×{{ item.quantity }}</span>
+                    <span class="item-subtotal">${{ item.lineTotal | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="no-items">No items in cart. <a routerLink="/">Browse books</a></p>
+          }
+        </div>
+
+        <!-- Customer info (display only) -->
+        <div class="section-card">
+          <h2>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Customer
+          </h2>
+          <div class="customer-info">
+            <div class="info-row">
+              <span class="info-label">Name</span>
+              <span class="info-value">{{ auth.currentUser()?.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Email</span>
+              <span class="info-value">{{ auth.currentUser()?.email }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: order summary -->
+      <div class="summary-col">
+        <div class="summary-card">
+          <h2>Order Summary</h2>
+
+          @if (cartService.cart(); as cart) {
+            <div class="summary-lines">
+              <div class="sum-row">
+                <span>Subtotal ({{ cart.totalItems }} item{{ cart.totalItems === 1 ? '' : 's' }})</span>
+                <span>${{ cart.totalPrice | number:'1.2-2' }}</span>
+              </div>
+              <div class="sum-row">
+                <span>Delivery</span>
+                <span class="free-tag">Free</span>
+              </div>
+            </div>
+
+            <div class="sum-divider"></div>
+
+            <div class="sum-total">
+              <span>Total</span>
+              <span class="total-val">${{ cart.totalPrice | number:'1.2-2' }}</span>
+            </div>
+
+            <button
+              class="btn-place-order"
+              [disabled]="placing() || cart.items.length === 0"
+              (click)="placeOrder()"
+            >
+              @if (placing()) {
+                <span class="spinner"></span> Placing order…
+              } @else {
+                Place Order
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              }
+            </button>
+
+            <a routerLink="/cart" class="btn-back-cart">← Edit cart</a>
+          }
+        </div>
+      </div>
+
+    </div>
+  }
+
+</main>

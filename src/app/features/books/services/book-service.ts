@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import {Apollo, gql} from 'apollo-angular';
-import {map, Observable} from 'rxjs';
-import {DeepPartial} from '@apollo/client/utilities';
-import {SEARCH_BOOKS} from '../../../core/graphql/operations';
+import { Apollo, gql } from 'apollo-angular';
+import { map, Observable } from 'rxjs';
+import { DeepPartial } from '@apollo/client/utilities';
+import { SEARCH_BOOKS, BOOK_BY_ID_QUERY } from '../../../core/graphql/operations';
 
 
 export interface Book {
@@ -12,6 +12,8 @@ export interface Book {
   category: string;
   imageSlug: string;
   filePath: string;
+  price?: number;
+  description?: string;
 }
 
 
@@ -107,6 +109,29 @@ export class BookService {
     );
   }
 
+
+  getBookById(id: string | number): Observable<Book | null> {
+    return this.apollo.query<{ book: DeepPartial<Book> | null }>({
+      query: BOOK_BY_ID_QUERY,
+      variables: { id },
+      fetchPolicy: 'network-only',
+    }).pipe(
+      map(res => {
+        const b = res.data?.book;
+        if (!b) return null;
+        return {
+          id:          b.id as unknown as number,
+          title:       b.title       ?? 'Unknown',
+          author:      b.author      ?? 'Unknown',
+          category:    b.category    ?? '',
+          imageSlug:   b.imageSlug   ?? '',
+          filePath:    b.filePath    ?? '',
+          price:       b.price       ?? undefined,
+          description: b.description ?? undefined,
+        };
+      })
+    );
+  }
 
   searchBooks(search: string) {
     return this.apollo.query<{ books: any[] }>({

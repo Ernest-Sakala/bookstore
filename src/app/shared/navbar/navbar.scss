@@ -91,6 +91,41 @@
   @media (min-width: 700px) { display: flex; }
 }
 
+.btn-cart-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  color: #374151;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+
+  &:hover { border-color: #6366f1; color: #6366f1; }
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(99,102,241,0.4);
+}
+
 .btn-upload {
   display: flex;
   align-items: center;

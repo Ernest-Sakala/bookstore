@@ -12,12 +12,29 @@ export const routes: Routes = [
   {
     path: 'register',
     loadComponent: () =>
-      import('./core/auth/register/register').then(m => m.Register)
+      import('./core/auth/register/register').then(m => m.Register),
   },
   {
     path: 'login',
     loadComponent: () =>
-      import('./core/auth/login/login').then(m => m.Login)
+      import('./core/auth/login/login').then(m => m.Login),
+  },
+  {
+    path: 'books/:id',
+    loadComponent: () =>
+      import('./features/books/pages/book-detail/book-detail').then(m => m.BookDetail),
+  },
+  {
+    path: 'cart',
+    loadComponent: () =>
+      import('./features/cart/cart-page/cart-page').then(m => m.CartPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'checkout',
+    loadComponent: () =>
+      import('./features/cart/checkout/checkout').then(m => m.Checkout),
+    canActivate: [authGuard],
   },
   {
     path: 'upload-book',
@@ -29,6 +46,7 @@ export const routes: Routes = [
   },
   {
     path: 'admin',
-    loadComponent: () => import('./features/admin/dashboard/dashboard').then(m => m.AdminDashboard),
+    loadComponent: () =>
+      import('./features/admin/dashboard/dashboard').then(m => m.AdminDashboard),
   },
 ];

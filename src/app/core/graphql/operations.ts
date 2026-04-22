@@ -28,6 +28,21 @@ export const LOGIN_MUTATION = gql`
 
 // ── Books ─────────────────────────────────────────────────────────────
 
+export const BOOK_BY_ID_QUERY = gql`
+  query BookById($id: ID!) {
+    book(id: $id) {
+      id
+      title
+      author
+      category
+      imageSlug
+      filePath
+      price
+      description
+    }
+  }
+`;
+
 export const BOOKS_QUERY = gql`
   query Books($search: String) {
     books(search: $search) {
@@ -128,6 +143,19 @@ export const REMOVE_CART_ITEM_MUTATION = gql`
 export const CLEAR_CART_MUTATION = gql`
   mutation ClearCart {
     clearCart
+  }
+`;
+
+// ── Orders ────────────────────────────────────────────────────────────
+
+export const CHECKOUT_MUTATION = gql`
+  mutation Checkout {
+    checkout {
+      id
+      totalAmount
+      status
+      createdAt
+    }
   }
 `;
 
