@@ -38,7 +38,7 @@ export class CartService {
     this.apollo.query<{ cart: Cart }>({
       query: CART_QUERY,
       fetchPolicy: 'network-only',
-    }).pipe(map(r => r.data.cart))
+    }).pipe(map(r => r.data!.cart))
       .subscribe(cart => this._cart.set(cart));
   }
 
