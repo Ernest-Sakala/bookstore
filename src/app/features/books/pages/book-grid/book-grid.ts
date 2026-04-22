@@ -1,7 +1,8 @@
-import {Component, OnInit, signal} from '@angular/core';
+import {Component, inject, OnInit, signal} from '@angular/core';
 import {Book, BookService} from '../../services/book-service';
 import {CommonModule, NgForOf, NgOptimizedImage} from '@angular/common';
-import {RouterLink} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
+import {AuthService} from '../../../../core/service/auth';
 
 @Component({
   selector: 'app-book-grid',
@@ -16,6 +17,8 @@ import {RouterLink} from '@angular/router';
 })
 export class BookGrid implements OnInit {
 
+  auth : AuthService = inject(AuthService);
+  router: Router = inject(Router);
   books = signal<Book[]>([]);
   loading = signal(true);  // signal instead of plain array
 
@@ -36,4 +39,22 @@ export class BookGrid implements OnInit {
     link.click();
   }
 
+  protected logout() {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+
+
+  onSearch(event: any) {
+    const keyword = event.target.value;
+
+    this.bookService.searchBooks(keyword).subscribe({
+      next: (res) => {
+        console.log(res);
+        if(res.data){
+          this.books.set(res.data.books);
+        }
+      }
+    });
+  }
 }

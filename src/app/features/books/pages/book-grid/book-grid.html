@@ -3,14 +3,23 @@
 
   <div class="search-wrapper">
     <input
+      id="search-input"
       type="text"
-      placeholder="Search books..."
+      placeholder="Search"
       class="nav-search"
+      (keyup.enter)="onSearch($event)"
     />
     <i class="fa-solid fa-magnifying-glass search-icon"></i>
   </div>
 
   <button [routerLink]="['/upload-book']" class="nav-btn" >Upload Book</button>
+
+  <button
+    class="nav-btn logout"
+    data-testid="logout-btn"
+    (click)="logout()">
+    Logout
+  </button>
 </nav>
 
 <section class="container">
@@ -39,7 +48,7 @@
           <button (click)="downloadBook(book)">Download</button>
         </div>
       } @empty {
-        <p>No books available.</p>
+        <p class="no-results">No books available.</p>
       }
     }
   </div>

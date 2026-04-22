@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import {Apollo, gql} from 'apollo-angular';
 import {map, Observable} from 'rxjs';
 import {DeepPartial} from '@apollo/client/utilities';
+import {SEARCH_BOOKS} from '../../../core/graphql/operations';
 
 
 export interface Book {
@@ -57,8 +58,8 @@ export class BookService {
     title: string,
     author: string,
     category: string,
-    image: File,
-    file: File
+    image?: File | undefined | null,
+    file?: File | undefined | null,
   ) {
     return this.apollo.mutate({
       mutation: gql`
@@ -104,5 +105,14 @@ export class BookService {
     }).pipe(
       map(result => result.data?.deleteBook ?? false)
     );
+  }
+
+
+  searchBooks(search: string) {
+    return this.apollo.query<{ books: any[] }>({
+      query: SEARCH_BOOKS,
+      variables: { search },
+      fetchPolicy: 'network-only'
+    });
   }
 }

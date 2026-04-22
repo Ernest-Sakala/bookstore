@@ -2,16 +2,19 @@ import { Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BookService } from '../../services/book-service';
 import {RouterLink} from '@angular/router';
+import {NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-book-upload',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, NgIf],
   templateUrl: './book-upload.html',
   styleUrls: ['./book-upload.scss'], // fixed typo: styleUrls instead of styleUrl
 })
 export class BookUpload {
 
   bookForm;
+
+  successMessage = '';
 
   constructor(
     private fb: FormBuilder,
@@ -37,15 +40,15 @@ export class BookUpload {
 
   // Your submitForm() exactly as before
   submitForm() {
-    if (this.bookForm.invalid) return;
 
     const { title, author, category, image, file } = this.bookForm.getRawValue();
-    if (!image || !file) return;
+
 
     this.bookService.uploadBook(title!, author!, category!, image, file)
       .subscribe({
         next: (res: any) => {
-          console.log('Book uploaded successfully', res);
+
+          this.successMessage = 'Book uploaded successfully';
           this.bookForm.reset();
         },
         error: (err: any) => console.error('Upload failed', err),

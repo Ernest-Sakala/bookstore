@@ -1,0 +1,68 @@
+<!-- src/app/auth/login/login.component.html -->
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <div class="auth-logo">📚</div>
+      <h1 class="auth-title">Welcome Back</h1>
+      <p class="auth-subtitle">Sign in to your Bookstore account</p>
+    </div>
+
+    @if (error) {
+      <div class="alert alert-error">⚠️ {{ error }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Email -->
+      <div class="field">
+        <label for="email">Email Address</label>
+        <input id="email" type="email" formControlName="email"
+               placeholder="you@example.com"
+               autocomplete="email"
+               [class.invalid]="email.invalid && email.touched" />
+        @if (email.touched && email.errors?.['required']) {
+          <span class="field-error">Email is required.</span>
+        }
+        @if (email.touched && email.errors?.['email']) {
+          <span class="field-error">Enter a valid email.</span>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <div class="label-row">
+          <label for="password">Password</label>
+          <a class="forgot-link" routerLink="/forgot-password">Forgot password?</a>
+        </div>
+        <div class="input-wrap">
+          <input id="password"
+                 [type]="showPwd ? 'text' : 'password'"
+                 formControlName="password"
+                 placeholder="Your password"
+                 autocomplete="current-password"
+                 [class.invalid]="password.invalid && password.touched" />
+          <button type="button" class="eye-btn"
+                  (click)="showPwd = !showPwd">
+            {{ showPwd ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        @if (password.touched && password.errors?.['required']) {
+          <span class="field-error">Password is required.</span>
+        }
+      </div>
+
+      <button type="submit" class="btn-primary"
+              id="login-btn"
+              [disabled]="loading">
+        @if (loading) { ⏳ Signing in… }
+        @else         { Sign In }
+      </button>
+
+    </form>
+
+    <p class="auth-footer">
+      Don't have an account? <a routerLink="/register">Create one</a>
+    </p>
+  </div>
+</div>

@@ -4,7 +4,7 @@
   <button [routerLink]="['/books-list']" class="nav-btn">Books List</button>
 </nav>
 
-<div class="upload-form">
+<div class="upload-form" data-testid="upload-form">
   <h2>Upload Book</h2>
   <form [formGroup]="bookForm" (ngSubmit)="submitForm()">
     <label>
@@ -35,6 +35,10 @@
       <input type="file" (change)="onFileChange($event, 'file')" accept=".pdf,.doc,.docx" />
     </label>
 
-    <button type="submit" [disabled]="bookForm.invalid">Upload Book</button>
+    <button type="submit" >Upload Book</button>
   </form>
+</div>
+
+<div *ngIf="successMessage" class="toast-success" data-testid="upload-success">
+  Book uploaded successfully
 </div>

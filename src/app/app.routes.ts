@@ -9,6 +9,16 @@ export const routes: Routes = [
     component: BookGrid,
   },
   {
+    path: 'register',
+    loadComponent: () =>
+      import('./core/auth/register/register').then(m => m.Register)
+  },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./core/auth/login/login').then(m => m.Login)
+  },
+  {
     path: 'upload-book',
     component: BookUpload,
   },
