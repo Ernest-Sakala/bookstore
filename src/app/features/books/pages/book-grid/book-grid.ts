@@ -1,33 +1,28 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
-import {Book, BookService} from '../../services/book-service';
-import {CommonModule, NgForOf, NgOptimizedImage} from '@angular/common';
-import {Router, RouterLink} from '@angular/router';
-import {AuthService} from '../../../../core/service/auth';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { Book, BookService } from '../../services/book-service';
+import { AuthService } from '../../../../core/service/auth';
+import { Navbar } from '../../../../shared/navbar/navbar';
 
 @Component({
   selector: 'app-book-grid',
-  imports: [
-    CommonModule,
-    NgOptimizedImage,
-    RouterLink,
-
-  ],
+  imports: [Navbar],
   templateUrl: './book-grid.html',
   styleUrl: './book-grid.scss',
+  standalone: true
 })
 export class BookGrid implements OnInit {
 
-  auth : AuthService = inject(AuthService);
-  router: Router = inject(Router);
-  books = signal<Book[]>([]);
-  loading = signal(true);  // signal instead of plain array
+  auth    = inject(AuthService);
+  router  = inject(Router);
+  books   = signal<Book[]>([]);
+  loading = signal(true);
 
   constructor(private bookService: BookService) {}
 
   ngOnInit(): void {
     this.bookService.getBooks().subscribe((data) => {
-      console.log('Books fetched from GraphQL:', data);
-      this.books.set(data); // update signal
+      this.books.set(data);
       this.loading.set(false);
     });
   }
@@ -39,21 +34,14 @@ export class BookGrid implements OnInit {
     link.click();
   }
 
-  protected logout() {
-    this.auth.logout();
-    this.router.navigate(['/login']);
-  }
-
-
-  onSearch(event: any) {
-    const keyword = event.target.value;
-
+  onSearch(keyword: string) {
+    if (!keyword.trim()) {
+      this.bookService.getBooks().subscribe(data => this.books.set(data));
+      return;
+    }
     this.bookService.searchBooks(keyword).subscribe({
       next: (res) => {
-        console.log(res);
-        if(res.data){
-          this.books.set(res.data.books);
-        }
+        if (res.data) this.books.set(res.data.books);
       }
     });
   }
