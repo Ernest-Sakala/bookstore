@@ -3,13 +3,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/service/auth';
 import { Book, BookService } from '../../books/services/book-service';
-import { Navbar } from '../../../shared/navbar/navbar';
+import { AdminNavbar } from '../navbar/admin-navbar';
 import { Sidebar, AdminSection } from '../../../shared/sidebar/sidebar';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [Navbar, Sidebar, ReactiveFormsModule],
+  imports: [AdminNavbar, Sidebar, ReactiveFormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   standalone: true

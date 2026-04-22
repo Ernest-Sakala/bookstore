@@ -1,9 +1,6 @@
-<!-- Top navbar -->
-<app-navbar />
+<div class="dashboard-page">
 
-<div class="dashboard-shell">
-
-  <!-- Sidebar -->
+  <!-- Sidebar — full viewport height -->
   <app-sidebar
     [active]="activeSection()"
     [collapsed]="sidebarCollapsed()"
@@ -11,8 +8,12 @@
     (collapseToggle)="sidebarCollapsed.set(!sidebarCollapsed())"
   />
 
-  <!-- Main content -->
-  <main class="dashboard-main">
+  <!-- Right column: navbar + scrollable content -->
+  <div class="dashboard-right">
+
+    <app-admin-navbar />
+
+    <main class="dashboard-main">
 
     <!-- ── OVERVIEW ─────────────────────────────────────────── -->
     @if (activeSection() === 'overview') {
@@ -327,5 +328,8 @@
       </div>
     }
 
-  </main>
-</div>
+    </main>
+
+  </div><!-- /.dashboard-right -->
+
+</div><!-- /.dashboard-page -->
