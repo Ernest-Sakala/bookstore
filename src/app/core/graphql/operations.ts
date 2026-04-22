@@ -162,6 +162,39 @@ export const CHECKOUT_MUTATION = gql`
 
 
 
+// ── Admin Order operations ────────────────────────────────────────────
+
+export const ADMIN_ORDERS_QUERY = gql`
+  query AdminOrders($status: String) {
+    orders(status: $status) {
+      id
+      customerName
+      customerEmail
+      totalAmount
+      status
+      createdAt
+      itemCount
+      items {
+        id
+        bookTitle
+        bookAuthor
+        bookPrice
+        quantity
+        lineTotal
+      }
+    }
+  }
+`;
+
+export const UPDATE_ORDER_STATUS_MUTATION = gql`
+  mutation UpdateOrderStatus($id: ID!, $status: String!) {
+    updateOrderStatus(id: $id, status: $status) {
+      id
+      status
+    }
+  }
+`;
+
 export const SEARCH_BOOKS = gql`
   query SearchBooks($search: String) {
     books(search: $search) {

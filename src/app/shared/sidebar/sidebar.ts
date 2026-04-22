@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 
-export type AdminSection = 'overview' | 'upload' | 'books';
+export type AdminSection = 'overview' | 'upload' | 'books' | 'orders';
 
 export interface SidebarItem {
   id: AdminSection;
@@ -24,6 +24,7 @@ export class Sidebar {
     { id: 'overview', label: 'Overview'      },
     { id: 'upload',   label: 'Upload Book'   },
     { id: 'books',    label: 'Manage Books'  },
+    { id: 'orders',   label: 'Orders'        },
   ];
 
   select(id: AdminSection) {
