@@ -27,18 +27,18 @@ export class BookService {
 
   constructor(private apollo: Apollo) {}
 
-  getBooks(page = 0, size = 8): Observable<BookPage> {
+  getBooks(page = 0, size = 8, category?: string): Observable<BookPage> {
     return this.apollo.query<{ books: BookPage }>({
       query: BOOKS_QUERY,
-      variables: { page, size },
+      variables: { page, size, category: category || null },
       fetchPolicy: 'network-only',
     }).pipe(map(r => r.data!.books as unknown as BookPage));
   }
 
-  searchBooks(search: string, page = 0, size = 8): Observable<BookPage> {
+  searchBooks(search: string, page = 0, size = 8, category?: string): Observable<BookPage> {
     return this.apollo.query<{ books: BookPage }>({
       query: BOOKS_QUERY,
-      variables: { search, page, size },
+      variables: { search, page, size, category: category || null },
       fetchPolicy: 'network-only',
     }).pipe(map(r => r.data!.books as unknown as BookPage));
   }

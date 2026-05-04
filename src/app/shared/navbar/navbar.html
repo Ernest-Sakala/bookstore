@@ -40,6 +40,23 @@
             <span class="cart-badge">{{ cartService.itemCount() }}</span>
           }
         </a>
+
+        @if (!auth.isAdmin()) {
+          <a routerLink="/my-orders" class="btn-nav-link">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <rect x="1" y="1" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M4 5h7M4 7.5h7M4 10h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            My Orders
+          </a>
+          <a routerLink="/profile" class="btn-nav-link">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <circle cx="7.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M2 13c0-3.038 2.462-5.5 5.5-5.5S13 9.962 13 13" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            Profile
+          </a>
+        }
       }
 
       @if (auth.isAdmin()) {
@@ -101,6 +118,10 @@
         <a routerLink="/admin" class="mobile-link" (click)="menuOpen = false">Admin Dashboard</a>
       }
       @if (auth.currentUser()) {
+        @if (!auth.isAdmin()) {
+          <a routerLink="/my-orders" class="mobile-link" (click)="menuOpen = false">My Orders</a>
+          <a routerLink="/profile" class="mobile-link" (click)="menuOpen = false">Profile</a>
+        }
         <button class="mobile-link logout" (click)="auth.logout(); menuOpen = false">Logout</button>
       } @else {
         <a routerLink="/login" class="mobile-link" (click)="menuOpen = false">Sign In</a>

@@ -1,17 +1,20 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
+import { Apollo } from 'apollo-angular';
 import { Book, BookPage, BookService } from '../../services/book-service';
 import { AuthService } from '../../../../core/service/auth';
 import { CartService } from '../../../../core/service/cart.service';
 import { Navbar } from '../../../../shared/navbar/navbar';
 import { Pagination } from '../../../../shared/pagination/pagination';
+import { CATEGORIES_QUERY } from '../../../../core/graphql/operations';
 
 const PAGE_SIZE = 8;
 
 @Component({
   selector: 'app-book-grid',
-  imports: [Navbar, RouterLink, Pagination],
+  imports: [Navbar, RouterLink, Pagination, FormsModule],
   templateUrl: './book-grid.html',
   styleUrl: './book-grid.scss',
   standalone: true,
@@ -21,11 +24,15 @@ export class BookGrid implements OnInit {
   auth        = inject(AuthService);
   router      = inject(Router);
   cartService = inject(CartService);
+  apollo      = inject(Apollo);
 
   books      = signal<Book[]>([]);
   loading    = signal(true);
   addingId   = signal<number | null>(null);
   searchTerm = signal('');
+
+  categories       = signal<string[]>([]);
+  selectedCategory = signal('');
 
   currentPage    = signal(0);
   totalPages     = signal(0);
@@ -35,15 +42,27 @@ export class BookGrid implements OnInit {
   constructor(private bookService: BookService) {}
 
   ngOnInit() {
+    this.loadCategories();
     this.loadPage(0);
+  }
+
+  private loadCategories() {
+    this.apollo.query<{ categories: string[] }>({
+      query: CATEGORIES_QUERY,
+      fetchPolicy: 'network-only',
+    }).subscribe({
+      next: (res) => this.categories.set(res.data?.categories ?? []),
+      error: () => {},
+    });
   }
 
   private loadPage(page: number) {
     this.loading.set(true);
     const term = this.searchTerm();
+    const cat  = this.selectedCategory() || undefined;
     const obs = term
-      ? this.bookService.searchBooks(term, page, PAGE_SIZE)
-      : this.bookService.getBooks(page, PAGE_SIZE);
+      ? this.bookService.searchBooks(term, page, PAGE_SIZE, cat)
+      : this.bookService.getBooks(page, PAGE_SIZE, cat);
 
     obs.subscribe({
       next: (p: BookPage) => {
@@ -64,6 +83,11 @@ export class BookGrid implements OnInit {
 
   onSearch(keyword: string) {
     this.searchTerm.set(keyword);
+    this.loadPage(0);
+  }
+
+  onCategoryChange(cat: string) {
+    this.selectedCategory.set(cat);
     this.loadPage(0);
   }
 

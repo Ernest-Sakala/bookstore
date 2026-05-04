@@ -20,6 +20,16 @@ export const routes: Routes = [
       import('./core/auth/login/login').then(m => m.Login),
   },
   {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./core/auth/forgot-password/forgot-password').then(m => m.ForgotPassword),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./core/auth/reset-password/reset-password').then(m => m.ResetPassword),
+  },
+  {
     path: 'books/:id',
     loadComponent: () =>
       import('./features/books/pages/book-detail/book-detail').then(m => m.BookDetail),
@@ -34,6 +44,18 @@ export const routes: Routes = [
     path: 'checkout',
     loadComponent: () =>
       import('./features/cart/checkout/checkout').then(m => m.Checkout),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'my-orders',
+    loadComponent: () =>
+      import('./features/customer/my-orders/my-orders').then(m => m.MyOrders),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'profile',
+    loadComponent: () =>
+      import('./features/customer/profile/profile').then(m => m.ProfilePage),
     canActivate: [authGuard],
   },
   {

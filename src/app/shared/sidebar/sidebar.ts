@@ -1,6 +1,6 @@
 import { Component, input, output } from '@angular/core';
 
-export type AdminSection = 'overview' | 'upload' | 'books' | 'orders';
+export type AdminSection = 'overview' | 'upload' | 'books' | 'orders' | 'users' | 'categories' | 'authors';
 
 export interface SidebarItem {
   id: AdminSection;
@@ -21,10 +21,13 @@ export class Sidebar {
   collapseToggle  = output<void>();
 
   readonly items: SidebarItem[] = [
-    { id: 'overview', label: 'Overview'      },
-    { id: 'upload',   label: 'Upload Book'   },
-    { id: 'books',    label: 'Manage Books'  },
-    { id: 'orders',   label: 'Orders'        },
+    { id: 'overview',    label: 'Overview'       },
+    { id: 'upload',      label: 'Upload Book'    },
+    { id: 'books',       label: 'Manage Books'   },
+    { id: 'orders',      label: 'Orders'         },
+    { id: 'users',       label: 'Users'          },
+    { id: 'categories',  label: 'Categories'     },
+    { id: 'authors',     label: 'Authors'        },
   ];
 
   select(id: AdminSection) {

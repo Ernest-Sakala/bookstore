@@ -78,9 +78,10 @@ export class CartService {
     }).pipe(tap(() => this._cart.set(null)));
   }
 
-  checkout() {
-    return this.apollo.mutate<{ checkout: { id: string; totalAmount: number; status: string; createdAt: string } }>({
+  checkout(shippingAddress: string) {
+    return this.apollo.mutate<{ checkout: { id: string; totalAmount: number; status: string; createdAt: string; shippingAddress: string } }>({
       mutation: CHECKOUT_MUTATION,
+      variables: { shippingAddress },
     }).pipe(tap(() => this._cart.set(null)));
   }
 }

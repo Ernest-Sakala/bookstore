@@ -1,0 +1,161 @@
+<app-navbar />
+
+<main class="profile-page">
+
+  <div class="page-header">
+    <h1>My Profile</h1>
+    <p>Manage your account information</p>
+  </div>
+
+  <div class="profile-layout">
+
+    <!-- Update Profile card -->
+    <div class="profile-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M3 18c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Update Profile</h2>
+          <p>Change your name and email address</p>
+        </div>
+      </div>
+
+      @if (profileSuccess()) {
+        <div class="alert-success">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M5 7.5l2 2 3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ profileSuccess() }}
+        </div>
+      }
+
+      @if (profileError()) {
+        <div class="alert-error">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M7.5 5v3M7.5 10h.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          {{ profileError() }}
+        </div>
+      }
+
+      <form [formGroup]="profileForm" (ngSubmit)="submitProfile()" novalidate>
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" formControlName="name" placeholder="Your name" class="form-input"
+            [class.invalid]="profileForm.get('name')!.invalid && profileForm.get('name')!.touched" />
+          @if (profileForm.get('name')!.touched && profileForm.get('name')!.errors?.['required']) {
+            <span class="field-error">Name is required.</span>
+          }
+          @if (profileForm.get('name')!.touched && profileForm.get('name')!.errors?.['minlength']) {
+            <span class="field-error">Name must be at least 2 characters.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" formControlName="email" placeholder="you@example.com" class="form-input"
+            [class.invalid]="profileForm.get('email')!.invalid && profileForm.get('email')!.touched" />
+          @if (profileForm.get('email')!.touched && profileForm.get('email')!.errors?.['required']) {
+            <span class="field-error">Email is required.</span>
+          }
+          @if (profileForm.get('email')!.touched && profileForm.get('email')!.errors?.['email']) {
+            <span class="field-error">Enter a valid email address.</span>
+          }
+        </div>
+
+        <button type="submit" class="btn-save" [disabled]="profileLoading()">
+          @if (profileLoading()) {
+            <span class="spinner"></span> Saving…
+          } @else {
+            Save Changes
+          }
+        </button>
+      </form>
+    </div>
+
+    <!-- Change Password card -->
+    <div class="profile-card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="3" y="9" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M7 9V6a3 3 0 0 1 6 0v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="10" cy="14" r="1.5" fill="currentColor"/>
+          </svg>
+        </div>
+        <div>
+          <h2>Change Password</h2>
+          <p>Update your account password</p>
+        </div>
+      </div>
+
+      @if (passwordSuccess()) {
+        <div class="alert-success">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M5 7.5l2 2 3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ passwordSuccess() }}
+        </div>
+      }
+
+      @if (passwordError()) {
+        <div class="alert-error">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+            <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M7.5 5v3M7.5 10h.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+          {{ passwordError() }}
+        </div>
+      }
+
+      <form [formGroup]="passwordForm" (ngSubmit)="submitPassword()" novalidate>
+        <div class="field">
+          <label>Current Password</label>
+          <input type="password" formControlName="currentPassword" placeholder="••••••••" class="form-input"
+            [class.invalid]="passwordForm.get('currentPassword')!.invalid && passwordForm.get('currentPassword')!.touched" />
+          @if (passwordForm.get('currentPassword')!.touched && passwordForm.get('currentPassword')!.errors?.['required']) {
+            <span class="field-error">Current password is required.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>New Password</label>
+          <input type="password" formControlName="newPassword" placeholder="••••••••" class="form-input"
+            [class.invalid]="passwordForm.get('newPassword')!.invalid && passwordForm.get('newPassword')!.touched" />
+          @if (passwordForm.get('newPassword')!.touched && passwordForm.get('newPassword')!.errors?.['required']) {
+            <span class="field-error">New password is required.</span>
+          }
+          @if (passwordForm.get('newPassword')!.touched && passwordForm.get('newPassword')!.errors?.['minlength']) {
+            <span class="field-error">Password must be at least 8 characters.</span>
+          }
+        </div>
+
+        <div class="field">
+          <label>Confirm New Password</label>
+          <input type="password" formControlName="confirmNewPassword" placeholder="••••••••" class="form-input"
+            [class.invalid]="passwordForm.get('confirmNewPassword')!.invalid && passwordForm.get('confirmNewPassword')!.touched" />
+          @if (passwordForm.get('confirmNewPassword')!.touched && passwordForm.get('confirmNewPassword')!.errors?.['required']) {
+            <span class="field-error">Please confirm your new password.</span>
+          }
+        </div>
+
+        <button type="submit" class="btn-save" [disabled]="passwordLoading()">
+          @if (passwordLoading()) {
+            <span class="spinner"></span> Updating…
+          } @else {
+            Update Password
+          }
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+</main>

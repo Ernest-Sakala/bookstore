@@ -1,0 +1,108 @@
+<app-navbar />
+
+<main class="orders-page">
+
+  <div class="page-header">
+    <h1>My Orders</h1>
+    <p>Track all your orders and their current status</p>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-list">
+      @for (n of [1,2,3]; track n) {
+        <div class="order-card skeleton">
+          <div class="sk-header">
+            <div class="sk sk-wide"></div>
+            <div class="sk sk-short"></div>
+          </div>
+          <div class="sk sk-medium"></div>
+        </div>
+      }
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+        <rect width="64" height="64" rx="18" fill="#f1f5f9"/>
+        <rect x="14" y="14" width="36" height="36" rx="5" stroke="#94a3b8" stroke-width="1.5"/>
+        <path d="M22 26h20M22 32h14" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <h2>No orders yet</h2>
+      <p>Your order history will appear here once you make a purchase.</p>
+      <a routerLink="/" class="btn-browse">Browse Books</a>
+    </div>
+  } @else {
+    <div class="orders-list">
+      @for (order of orders(); track order.id) {
+        <div class="order-card">
+
+          <div class="order-card-header" (click)="toggleExpand(order.id)">
+            <div class="order-meta">
+              <div class="order-id-wrap">
+                <span class="order-label">Order</span>
+                <span class="order-id">#{{ order.id }}</span>
+              </div>
+              <div class="order-date">
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                  <rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#94a3b8" stroke-width="1.2"/>
+                  <path d="M4 1v2M9 1v2M1 5h11" stroke="#94a3b8" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                {{ order.createdAt | date:'dd MMM yyyy' }}
+              </div>
+            </div>
+
+            <div class="order-summary">
+              @if (order.shippingAddress) {
+                <div class="shipping-pill">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M6 1C4.34 1 3 2.34 3 4c0 2.5 3 6 3 6s3-3.5 3-6c0-1.66-1.34-3-3-3z" stroke="currentColor" stroke-width="1.1"/>
+                    <circle cx="6" cy="4" r="1.2" stroke="currentColor" stroke-width="1.1"/>
+                  </svg>
+                  {{ order.shippingAddress }}
+                </div>
+              }
+              <span class="status-badge" [ngClass]="statusClass(order.status)">{{ order.status }}</span>
+              <span class="order-total">K{{ order.totalAmount | number:'1.2-2' }}</span>
+              <button class="expand-btn" [attr.aria-expanded]="expandedOrderId() === order.id">
+                @if (expandedOrderId() === order.id) {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 10l5-5 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                }
+              </button>
+            </div>
+          </div>
+
+          @if (expandedOrderId() === order.id) {
+            <div class="order-items-panel">
+              <h4>{{ order.itemCount }} item{{ order.itemCount === 1 ? '' : 's' }}</h4>
+              <div class="items-list">
+                @for (item of order.items; track item.id) {
+                  <div class="order-item">
+                    <div class="item-info">
+                      <span class="item-title">{{ item.bookTitle }}</span>
+                      <span class="item-author">{{ item.bookAuthor }}</span>
+                    </div>
+                    <div class="item-right">
+                      <span class="item-qty">×{{ item.quantity }}</span>
+                      <span class="item-price">K{{ item.lineTotal | number:'1.2-2' }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="items-total">
+                <span>Order Total</span>
+                <span class="items-total-val">K{{ order.totalAmount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+  }
+
+</main>

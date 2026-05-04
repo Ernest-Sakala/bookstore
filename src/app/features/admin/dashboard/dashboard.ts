@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DecimalPipe, DatePipe, NgClass } from '@angular/common';
 import { Apollo } from 'apollo-angular';
@@ -10,9 +10,20 @@ import { Book, BookPage, BookService } from '../../books/services/book-service';
 import { Pagination } from '../../../shared/pagination/pagination';
 import { AdminNavbar } from '../navbar/admin-navbar';
 import { Sidebar, AdminSection } from '../../../shared/sidebar/sidebar';
+import { UserInfo } from '../../../core/models/models';
 import {
   ADMIN_ORDERS_QUERY,
   UPDATE_ORDER_STATUS_MUTATION,
+  ADMIN_USERS_QUERY,
+  BLOCK_USER_MUTATION,
+  UNBLOCK_USER_MUTATION,
+  DELETE_USER_MUTATION,
+  CATEGORIES_QUERY,
+  ADD_CATEGORY_MUTATION,
+  DELETE_CATEGORY_MUTATION,
+  AUTHORS_QUERY,
+  ADD_AUTHOR_MUTATION,
+  DELETE_AUTHOR_MUTATION,
 } from '../../../core/graphql/operations';
 
 export interface OrderItem {
@@ -39,7 +50,7 @@ export const ORDER_STATUSES = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [AdminNavbar, Sidebar, ReactiveFormsModule, DecimalPipe, DatePipe, NgClass, Pagination],
+  imports: [AdminNavbar, Sidebar, ReactiveFormsModule, FormsModule, DecimalPipe, DatePipe, NgClass, Pagination],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   standalone: true,
@@ -87,6 +98,20 @@ export class AdminDashboard implements OnInit {
 
   readonly statuses = ORDER_STATUSES;
 
+  /* ── Users (FR16) ── */
+  users        = signal<UserInfo[]>([]);
+  usersLoading = signal(false);
+
+  /* ── Categories (FR18) ── */
+  categoriesList    = signal<string[]>([]);
+  categoriesLoading = signal(false);
+  newCategory       = signal('');
+
+  /* ── Authors (FR19) ── */
+  authorsList    = signal<string[]>([]);
+  authorsLoading = signal(false);
+  newAuthor      = signal('');
+
   ngOnInit() {
     this.loadBooks();
   }
@@ -111,8 +136,11 @@ export class AdminDashboard implements OnInit {
 
   setSection(section: AdminSection) {
     this.activeSection.set(section);
-    if (section === 'books')  this.loadBooks(0);
-    if (section === 'orders') this.loadOrders();
+    if (section === 'books')      this.loadBooks(0);
+    if (section === 'orders')     this.loadOrders();
+    if (section === 'users')      this.loadUsers();
+    if (section === 'categories') this.loadCategories();
+    if (section === 'authors')    this.loadAuthors();
   }
 
   /* ── Overview stats ── */
@@ -245,5 +273,174 @@ export class AdminDashboard implements OnInit {
 
   ordersCountByStatus(status: string) {
     return this.orders().filter(o => o.status === status).length;
+  }
+
+  /* ── Users (FR16) ── */
+  loadUsers() {
+    this.usersLoading.set(true);
+    this.apollo.query<{ adminUsers: UserInfo[] }>({
+      query: ADMIN_USERS_QUERY,
+      fetchPolicy: 'network-only',
+    }).subscribe({
+      next: (res) => { this.users.set(res.data?.adminUsers ?? []); this.usersLoading.set(false); },
+      error: ()    => this.usersLoading.set(false),
+    });
+  }
+
+  blockUser(user: UserInfo) {
+    this.apollo.mutate<{ blockUser: { id: string; active: boolean } }>({
+      mutation: BLOCK_USER_MUTATION,
+      variables: { id: user.id },
+    }).subscribe({
+      next: (res) => {
+        const updated = res.data?.blockUser;
+        if (updated) {
+          this.users.update(list => list.map(u => u.id === updated.id ? { ...u, active: updated.active } : u));
+        }
+      },
+      error: (err) => Swal.fire('Error', err.graphQLErrors?.[0]?.message ?? err.message, 'error'),
+    });
+  }
+
+  unblockUser(user: UserInfo) {
+    this.apollo.mutate<{ unblockUser: { id: string; active: boolean } }>({
+      mutation: UNBLOCK_USER_MUTATION,
+      variables: { id: user.id },
+    }).subscribe({
+      next: (res) => {
+        const updated = res.data?.unblockUser;
+        if (updated) {
+          this.users.update(list => list.map(u => u.id === updated.id ? { ...u, active: updated.active } : u));
+        }
+      },
+      error: (err) => Swal.fire('Error', err.graphQLErrors?.[0]?.message ?? err.message, 'error'),
+    });
+  }
+
+  deleteUser(user: UserInfo) {
+    Swal.fire({
+      title: `Delete user "${user.name}"?`,
+      text: 'This action cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6366f1',
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+      this.apollo.mutate<{ deleteUser: boolean }>({
+        mutation: DELETE_USER_MUTATION,
+        variables: { id: user.id },
+      }).subscribe({
+        next: () => {
+          this.users.update(list => list.filter(u => u.id !== user.id));
+          Swal.fire({ title: 'Deleted', icon: 'success', timer: 1500, showConfirmButton: false });
+        },
+        error: (err) => Swal.fire('Error', err.graphQLErrors?.[0]?.message ?? err.message, 'error'),
+      });
+    });
+  }
+
+  /* ── Categories (FR18) ── */
+  loadCategories() {
+    this.categoriesLoading.set(true);
+    this.apollo.query<{ categories: string[] }>({
+      query: CATEGORIES_QUERY,
+      fetchPolicy: 'network-only',
+    }).subscribe({
+      next: (res) => { this.categoriesList.set(res.data?.categories ?? []); this.categoriesLoading.set(false); },
+      error: ()    => this.categoriesLoading.set(false),
+    });
+  }
+
+  submitAddCategory() {
+    const name = this.newCategory().trim();
+    if (!name) return;
+    this.apollo.mutate<{ addCategory: string }>({
+      mutation: ADD_CATEGORY_MUTATION,
+      variables: { name },
+    }).subscribe({
+      next: () => {
+        this.categoriesList.update(list => [...list, name]);
+        this.newCategory.set('');
+      },
+      error: (err) => Swal.fire('Error', err.graphQLErrors?.[0]?.message ?? err.message, 'error'),
+    });
+  }
+
+  deleteCategory(name: string) {
+    Swal.fire({
+      title: `Delete category "${name}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6366f1',
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+      this.apollo.mutate<{ deleteCategory: boolean }>({
+        mutation: DELETE_CATEGORY_MUTATION,
+        variables: { name },
+      }).subscribe({
+        next: () => {
+          this.categoriesList.update(list => list.filter(c => c !== name));
+          Swal.fire({ title: 'Deleted', icon: 'success', timer: 1500, showConfirmButton: false });
+        },
+        error: (err) => Swal.fire('Error', err.graphQLErrors?.[0]?.message ?? err.message, 'error'),
+      });
+    });
+  }
+
+  /* ── Authors (FR19) ── */
+  loadAuthors() {
+    this.authorsLoading.set(true);
+    this.apollo.query<{ authors: string[] }>({
+      query: AUTHORS_QUERY,
+      fetchPolicy: 'network-only',
+    }).subscribe({
+      next: (res) => { this.authorsList.set(res.data?.authors ?? []); this.authorsLoading.set(false); },
+      error: ()    => this.authorsLoading.set(false),
+    });
+  }
+
+  submitAddAuthor() {
+    const name = this.newAuthor().trim();
+    if (!name) return;
+    this.apollo.mutate<{ addAuthor: string }>({
+      mutation: ADD_AUTHOR_MUTATION,
+      variables: { name },
+    }).subscribe({
+      next: () => {
+        this.authorsList.update(list => [...list, name]);
+        this.newAuthor.set('');
+      },
+      error: (err) => Swal.fire('Error', err.graphQLErrors?.[0]?.message ?? err.message, 'error'),
+    });
+  }
+
+  deleteAuthor(name: string) {
+    Swal.fire({
+      title: `Delete author "${name}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6366f1',
+    }).then((result) => {
+      if (!result.isConfirmed) return;
+      this.apollo.mutate<{ deleteAuthor: boolean }>({
+        mutation: DELETE_AUTHOR_MUTATION,
+        variables: { name },
+      }).subscribe({
+        next: () => {
+          this.authorsList.update(list => list.filter(a => a !== name));
+          Swal.fire({ title: 'Deleted', icon: 'success', timer: 1500, showConfirmButton: false });
+        },
+        error: (err) => Swal.fire('Error', err.graphQLErrors?.[0]?.message ?? err.message, 'error'),
+      });
+    });
   }
 }

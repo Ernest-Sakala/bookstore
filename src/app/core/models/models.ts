@@ -42,3 +42,38 @@ export interface Cart {
   totalPrice: number;
   itemCount:  number;
 }
+
+export interface UserInfo {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface PaymentResult {
+  success: boolean;
+  transactionId: string;
+  message: string;
+}
+
+export interface OrderItem {
+  id: string;
+  bookId: string;
+  bookTitle: string;
+  bookAuthor: string;
+  bookPrice: number;
+  quantity: number;
+  lineTotal: number;
+}
+
+export interface MyOrder {
+  id: string;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+  shippingAddress: string;
+  itemCount: number;
+  items: OrderItem[];
+}

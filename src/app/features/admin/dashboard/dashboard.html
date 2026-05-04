@@ -365,19 +365,15 @@
           </div>
         }
 
-        @if (booksTotalPages() > 1) {
-          <div style="padding: 0 16px 16px">
-            <app-pagination
-              [currentPage]="booksPage()"
-              [totalPages]="booksTotalPages()"
-              [totalElements]="booksTotalElements()"
-              [pageSize]="booksPageSize"
-              (pageChange)="onBooksPageChange($event)"
-            />
-          </div>
-        }
-
       </div>
+
+      <app-pagination
+        [currentPage]="booksPage()"
+        [totalPages]="booksTotalPages()"
+        [totalElements]="booksTotalElements()"
+        [pageSize]="booksPageSize"
+        (pageChange)="onBooksPageChange($event)"
+      />
     }
 
     <!-- ── ORDERS ──────────────────────────────────────────────── -->
@@ -540,6 +536,220 @@
           </div>
         }
 
+      </div>
+    }
+
+    <!-- ── USERS ────────────────────────────────────────────────── -->
+    @if (activeSection() === 'users') {
+      <div class="section-header">
+        <h1>Users</h1>
+        <p>{{ users().length }} registered user{{ users().length === 1 ? '' : 's' }}</p>
+      </div>
+
+      <div class="table-card">
+        @if (usersLoading()) {
+          <div class="table-loading">
+            @for (n of [1,2,3,4]; track n) {
+              <div class="table-skeleton">
+                <div class="sk sk-img"></div>
+                <div class="sk-lines">
+                  <div class="sk sk-wide"></div>
+                  <div class="sk sk-medium"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (users().length === 0) {
+          <div class="table-empty">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <rect width="48" height="48" rx="14" fill="#f1f5f9"/>
+              <circle cx="24" cy="18" r="7" stroke="#94a3b8" stroke-width="1.5"/>
+              <path d="M10 40c0-7.732 6.268-14 14-14s14 6.268 14 14" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <p>No users found</p>
+          </div>
+        } @else {
+          <div class="table-wrap">
+            <table class="book-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of users(); track user.id) {
+                  <tr>
+                    <td>
+                      <div class="customer-cell">
+                        <div class="customer-avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
+                        <span class="customer-name">{{ user.name }}</span>
+                      </div>
+                    </td>
+                    <td class="td-muted">{{ user.email }}</td>
+                    <td>
+                      <span class="cat-badge">{{ user.role }}</span>
+                    </td>
+                    <td>
+                      @if (user.active) {
+                        <span class="status-badge status-delivered">Active</span>
+                      } @else {
+                        <span class="status-badge status-cancelled">Blocked</span>
+                      }
+                    </td>
+                    <td class="td-muted">{{ user.createdAt | date:'dd MMM yyyy' }}</td>
+                    <td>
+                      <div class="action-btns">
+                        @if (user.active) {
+                          <button class="btn-action" style="color:#d97706" title="Block user" (click)="blockUser(user)">
+                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                              <circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/>
+                              <path d="M4 7.5h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                            </svg>
+                          </button>
+                        } @else {
+                          <button class="btn-action" style="color:#059669" title="Unblock user" (click)="unblockUser(user)">
+                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                              <circle cx="7.5" cy="7.5" r="6" stroke="currentColor" stroke-width="1.3"/>
+                              <path d="M5 7.5l2 2 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          </button>
+                        }
+                        <button class="btn-action delete" title="Delete user" (click)="deleteUser(user)">
+                          <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                            <path d="M2.5 4h10M5.5 4V2.5h4V4M6.5 7v4M8.5 7v4M3.5 4l.5 8.5a1 1 0 0 0 1 .5h5a1 1 0 0 0 1-.5L12 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── CATEGORIES ───────────────────────────────────────────── -->
+    @if (activeSection() === 'categories') {
+      <div class="section-header">
+        <h1>Categories</h1>
+        <p>Manage book categories</p>
+      </div>
+
+      <!-- Add category form -->
+      <div class="form-card" style="margin-bottom: 20px; max-width: 760px;">
+        <div class="add-item-row">
+          <input
+            type="text"
+            class="add-item-input"
+            placeholder="New category name…"
+            [ngModel]="newCategory()"
+            (ngModelChange)="newCategory.set($event)"
+            (keyup.enter)="submitAddCategory()"
+          />
+          <button class="btn-add" (click)="submitAddCategory()" [disabled]="!newCategory().trim()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Add Category
+          </button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        @if (categoriesLoading()) {
+          <div class="table-loading">
+            @for (n of [1,2,3]; track n) {
+              <div class="table-skeleton">
+                <div class="sk-lines" style="flex:1">
+                  <div class="sk sk-wide"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (categoriesList().length === 0) {
+          <div class="table-empty">
+            <p>No categories yet. Add one above.</p>
+          </div>
+        } @else {
+          <div class="tag-list">
+            @for (cat of categoriesList(); track cat) {
+              <div class="tag-item">
+                <span class="cat-badge">{{ cat }}</span>
+                <button class="btn-action delete" title="Delete category" (click)="deleteCategory(cat)">
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <path d="M2 3.5h9M4.5 3.5V2h4v1.5M5.5 6v3.5M7.5 6v3.5M3 3.5l.5 7a1 1 0 0 0 1 .5h4a1 1 0 0 0 1-.5l.5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── AUTHORS ──────────────────────────────────────────────── -->
+    @if (activeSection() === 'authors') {
+      <div class="section-header">
+        <h1>Authors</h1>
+        <p>Manage book authors</p>
+      </div>
+
+      <!-- Add author form -->
+      <div class="form-card" style="margin-bottom: 20px; max-width: 760px;">
+        <div class="add-item-row">
+          <input
+            type="text"
+            class="add-item-input"
+            placeholder="New author name…"
+            [ngModel]="newAuthor()"
+            (ngModelChange)="newAuthor.set($event)"
+            (keyup.enter)="submitAddAuthor()"
+          />
+          <button class="btn-add" (click)="submitAddAuthor()" [disabled]="!newAuthor().trim()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            Add Author
+          </button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        @if (authorsLoading()) {
+          <div class="table-loading">
+            @for (n of [1,2,3]; track n) {
+              <div class="table-skeleton">
+                <div class="sk-lines" style="flex:1">
+                  <div class="sk sk-wide"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (authorsList().length === 0) {
+          <div class="table-empty">
+            <p>No authors yet. Add one above.</p>
+          </div>
+        } @else {
+          <div class="tag-list">
+            @for (author of authorsList(); track author) {
+              <div class="tag-item">
+                <span class="author-tag">{{ author }}</span>
+                <button class="btn-action delete" title="Delete author" (click)="deleteAuthor(author)">
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <path d="M2 3.5h9M4.5 3.5V2h4v1.5M5.5 6v3.5M7.5 6v3.5M3 3.5l.5 7a1 1 0 0 0 1 .5h4a1 1 0 0 0 1-.5l.5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
       </div>
     }
 
