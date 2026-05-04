@@ -40,6 +40,11 @@
     </label>
 
     <label>
+      <span>Description</span>
+      <textarea formControlName="description" rows="3" placeholder="Brief description of the book…"></textarea>
+    </label>
+
+    <label>
       <span>Book Cover Image</span>
       <input type="file" (change)="onFileChange($event, 'image')" accept="image/*" />
     </label>

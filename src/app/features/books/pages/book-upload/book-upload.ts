@@ -27,10 +27,11 @@ export class BookUpload implements OnInit {
     private apollo:      Apollo,
   ) {
     this.bookForm = this.fb.group({
-      title:    ['', Validators.required],
-      author:   ['', Validators.required],
-      category: ['', Validators.required],
-      image:    [null as File | null, Validators.required],
+      title:       ['', Validators.required],
+      author:      ['', Validators.required],
+      category:    ['', Validators.required],
+      description: [''],
+      image:       [null as File | null, Validators.required],
     });
   }
 
@@ -52,8 +53,8 @@ export class BookUpload implements OnInit {
 
   submitForm() {
     if (this.bookForm.invalid) { this.bookForm.markAllAsTouched(); return; }
-    const { title, author, category, image } = this.bookForm.getRawValue();
-    this.bookService.uploadBook(title!, author!, category!, image).subscribe({
+    const { title, author, category, description, image } = this.bookForm.getRawValue();
+    this.bookService.uploadBook(title!, author!, category!, image, undefined, description ?? undefined).subscribe({
       next: () => {
         this.successMessage = 'Book uploaded successfully';
         this.bookForm.reset();

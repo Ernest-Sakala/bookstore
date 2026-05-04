@@ -77,11 +77,12 @@ export class AdminDashboard implements OnInit {
 
   /* ── Upload form ── */
   uploadForm = this.fb.group({
-    title:    ['', Validators.required],
-    author:   ['', Validators.required],
-    category: ['', Validators.required],
-    price:    [null as number | null, [Validators.required, Validators.min(0)]],
-    image:    [null as File | null, Validators.required],
+    title:       ['', Validators.required],
+    author:      ['', Validators.required],
+    category:    ['', Validators.required],
+    price:       [null as number | null, [Validators.required, Validators.min(0)]],
+    description: [''],
+    image:       [null as File | null, Validators.required],
   });
   uploading     = signal(false);
   uploadSuccess = signal('');
@@ -172,8 +173,8 @@ export class AdminDashboard implements OnInit {
     this.uploading.set(true);
     this.uploadSuccess.set('');
     this.uploadError.set('');
-    const { title, author, category, price, image } = this.uploadForm.getRawValue();
-    this.bookService.uploadBook(title!, author!, category!, image, price ?? undefined).subscribe({
+    const { title, author, category, price, description, image } = this.uploadForm.getRawValue();
+    this.bookService.uploadBook(title!, author!, category!, image, price ?? undefined, description ?? undefined).subscribe({
       next: () => {
         this.uploading.set(false);
         this.uploadSuccess.set(`"${title}" uploaded successfully.`);

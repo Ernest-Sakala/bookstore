@@ -51,18 +51,18 @@ export class BookService {
   }
 
   uploadBook(title: string, author: string, category: string,
-             image?: File | null, price?: number) {
+             image?: File | null, price?: number, description?: string) {
     return this.apollo.mutate({
       mutation: gql`
         mutation uploadBook($title: String!, $author: String!, $category: String!,
-                            $image: Upload!, $price: Float) {
+                            $image: Upload!, $price: Float, $description: String) {
           uploadBook(title: $title, author: $author, category: $category,
-                     image: $image, price: $price) {
-            id title author price
+                     image: $image, price: $price, description: $description) {
+            id title author price description
           }
         }
       `,
-      variables: { title, author, category, image, price },
+      variables: { title, author, category, image, price, description },
     });
   }
 
