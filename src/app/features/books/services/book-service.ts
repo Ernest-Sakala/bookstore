@@ -9,7 +9,6 @@ export interface Book {
   author: string;
   category: string;
   imageSlug: string;
-  filePath: string;
   price?: number;
   description?: string;
 }
@@ -52,18 +51,18 @@ export class BookService {
   }
 
   uploadBook(title: string, author: string, category: string,
-             image?: File | null, file?: File | null, price?: number) {
+             image?: File | null, price?: number) {
     return this.apollo.mutate({
       mutation: gql`
         mutation uploadBook($title: String!, $author: String!, $category: String!,
-                            $image: Upload!, $file: Upload!, $price: Float) {
+                            $image: Upload!, $price: Float) {
           uploadBook(title: $title, author: $author, category: $category,
-                     image: $image, file: $file, price: $price) {
+                     image: $image, price: $price) {
             id title author price
           }
         }
       `,
-      variables: { title, author, category, image, file, price },
+      variables: { title, author, category, image, price },
     });
   }
 

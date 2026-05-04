@@ -3,6 +3,7 @@ import { BookGrid } from './features/books/pages/book-grid/book-grid';
 import { BookUpload } from './features/books/pages/book-upload/book-upload';
 import { BooksList } from './features/books/pages/books-list/books-list';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -70,5 +71,6 @@ export const routes: Routes = [
     path: 'admin',
     loadComponent: () =>
       import('./features/admin/dashboard/dashboard').then(m => m.AdminDashboard),
+    canActivate: [adminGuard],
   },
 ];

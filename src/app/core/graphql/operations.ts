@@ -36,7 +36,6 @@ export const BOOK_BY_ID_QUERY = gql`
       author
       category
       imageSlug
-      filePath
       price
       description
     }
@@ -47,7 +46,7 @@ export const BOOK_BY_ID_QUERY = gql`
 export const BOOKS_QUERY = gql`
   query Books($search: String, $category: String, $page: Int, $size: Int) {
     books(search: $search, category: $category, page: $page, size: $size) {
-      books { id title author category imageSlug filePath price description }
+      books { id title author category imageSlug price description }
       totalElements totalPages currentPage pageSize
     }
   }

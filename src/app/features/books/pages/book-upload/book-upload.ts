@@ -1,57 +1,64 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { NgIf } from '@angular/common';
+import { Apollo } from 'apollo-angular';
+
 import { BookService } from '../../services/book-service';
-import {RouterLink} from '@angular/router';
-import {NgIf} from '@angular/common';
+import { CATEGORIES_QUERY, AUTHORS_QUERY } from '../../../../core/graphql/operations';
 
 @Component({
   selector: 'app-book-upload',
   imports: [ReactiveFormsModule, RouterLink, NgIf],
   templateUrl: './book-upload.html',
-  styleUrls: ['./book-upload.scss'], // fixed typo: styleUrls instead of styleUrl
+  styleUrls: ['./book-upload.scss'],
 })
-export class BookUpload {
+export class BookUpload implements OnInit {
 
   bookForm;
-
   successMessage = '';
 
+  categories = signal<string[]>([]);
+  authors    = signal<string[]>([]);
+
   constructor(
-    private fb: FormBuilder,
-    private bookService: BookService
+    private fb:          FormBuilder,
+    private bookService: BookService,
+    private apollo:      Apollo,
   ) {
     this.bookForm = this.fb.group({
-      title: ['', Validators.required],
-      author: ['', Validators.required],
+      title:    ['', Validators.required],
+      author:   ['', Validators.required],
       category: ['', Validators.required],
-      image: [null as File | null, Validators.required],
-      file: [null as File | null, Validators.required],
+      image:    [null as File | null, Validators.required],
     });
   }
 
-  // Unified file input handler
+  ngOnInit() {
+    this.apollo.query<{ categories: string[] }>({
+      query: CATEGORIES_QUERY, fetchPolicy: 'network-only',
+    }).subscribe({ next: r => this.categories.set(r.data?.categories ?? []) });
+
+    this.apollo.query<{ authors: string[] }>({
+      query: AUTHORS_QUERY, fetchPolicy: 'network-only',
+    }).subscribe({ next: r => this.authors.set(r.data?.authors ?? []) });
+  }
+
   onFileChange(event: Event, field: 'image' | 'file') {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
-
-    const file = input.files[0];
-    this.bookForm.patchValue({ [field]: file });
+    this.bookForm.patchValue({ [field]: input.files[0] });
   }
 
-  // Your submitForm() exactly as before
   submitForm() {
-
-    const { title, author, category, image, file } = this.bookForm.getRawValue();
-
-
-    this.bookService.uploadBook(title!, author!, category!, image, file)
-      .subscribe({
-        next: (res: any) => {
-
-          this.successMessage = 'Book uploaded successfully';
-          this.bookForm.reset();
-        },
-        error: (err: any) => console.error('Upload failed', err),
-      });
+    if (this.bookForm.invalid) { this.bookForm.markAllAsTouched(); return; }
+    const { title, author, category, image } = this.bookForm.getRawValue();
+    this.bookService.uploadBook(title!, author!, category!, image).subscribe({
+      next: () => {
+        this.successMessage = 'Book uploaded successfully';
+        this.bookForm.reset();
+      },
+      error: (err: any) => console.error('Upload failed', err),
+    });
   }
 }

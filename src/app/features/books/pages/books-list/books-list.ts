@@ -46,14 +46,7 @@ export class BooksList implements OnInit {
     this.loadBooks(page);
   }
 
-  downloadBook(book: Book) {
-    const link = document.createElement('a');
-    link.href = `http://localhost:8080/uploads/files/${book.filePath.split('/').pop()}`;
-    link.download = book.title + '.pdf';
-    link.click();
-  }
-
-  editBook(book: Book) {
+editBook(book: Book) {
     this.router.navigate(['/edit-book', book.id]);
   }
 

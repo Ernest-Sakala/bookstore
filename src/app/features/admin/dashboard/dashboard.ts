@@ -82,7 +82,6 @@ export class AdminDashboard implements OnInit {
     category: ['', Validators.required],
     price:    [null as number | null, [Validators.required, Validators.min(0)]],
     image:    [null as File | null, Validators.required],
-    file:     [null as File | null, Validators.required],
   });
   uploading     = signal(false);
   uploadSuccess = signal('');
@@ -114,6 +113,8 @@ export class AdminDashboard implements OnInit {
 
   ngOnInit() {
     this.loadBooks();
+    this.loadCategories();
+    this.loadAuthors();
   }
 
   loadBooks(page = 0) {
@@ -141,6 +142,10 @@ export class AdminDashboard implements OnInit {
     if (section === 'users')      this.loadUsers();
     if (section === 'categories') this.loadCategories();
     if (section === 'authors')    this.loadAuthors();
+    if (section === 'upload') {
+      if (!this.categoriesList().length) this.loadCategories();
+      if (!this.authorsList().length)    this.loadAuthors();
+    }
   }
 
   /* ── Overview stats ── */
@@ -167,8 +172,8 @@ export class AdminDashboard implements OnInit {
     this.uploading.set(true);
     this.uploadSuccess.set('');
     this.uploadError.set('');
-    const { title, author, category, price, image, file } = this.uploadForm.getRawValue();
-    this.bookService.uploadBook(title!, author!, category!, image, file, price ?? undefined).subscribe({
+    const { title, author, category, price, image } = this.uploadForm.getRawValue();
+    this.bookService.uploadBook(title!, author!, category!, image, price ?? undefined).subscribe({
       next: () => {
         this.uploading.set(false);
         this.uploadSuccess.set(`"${title}" uploaded successfully.`);
@@ -205,13 +210,6 @@ export class AdminDashboard implements OnInit {
         error: (err) => Swal.fire('Error', err.message, 'error'),
       });
     });
-  }
-
-  downloadBook(book: Book) {
-    const link = document.createElement('a');
-    link.href = 'http://localhost:8080/uploads/files/' + book.filePath.split('/').pop();
-    link.download = book.title + '.pdf';
-    link.click();
   }
 
   /* ── Orders ── */

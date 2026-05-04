@@ -18,8 +18,7 @@
         <th>Title</th>
         <th>Author</th>
         <th>Category</th>
-        <th>Download</th>
-        <th>Actions</th> <!-- new column -->
+        <th>Actions</th>
       </tr>
       </thead>
 
@@ -39,10 +38,6 @@
             <td>{{ book.title }}</td>
             <td>{{ book.author }}</td>
             <td>{{ book.category }}</td>
-
-            <td>
-              <button (click)="downloadBook(book)">Download</button>
-            </td>
 
             <td>
               <button (click)="editBook(book)">Edit</button>

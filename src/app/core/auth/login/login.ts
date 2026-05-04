@@ -44,13 +44,16 @@ export class Login {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
 
     this.loading = true;
-    this.error   = '/';
+    this.error   = '';
 
     this.auth.login(
       this.email.value.trim().toLowerCase(),
       this.password.value
     ).subscribe({
-      next: () => this.router.navigateByUrl(this.returnUrl),
+      next: () => {
+        const destination = this.auth.isAdmin() ? '/admin' : this.returnUrl;
+        this.router.navigateByUrl(destination);
+      },
       error: (err) => {
         this.loading = false;
         this.error   = err.graphQLErrors?.[0]?.message

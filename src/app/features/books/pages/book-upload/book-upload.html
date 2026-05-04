@@ -7,6 +7,7 @@
 <div class="upload-form" data-testid="upload-form">
   <h2>Upload Book</h2>
   <form [formGroup]="bookForm" (ngSubmit)="submitForm()">
+
     <label>
       <span>Title</span>
       <input type="text" formControlName="title" placeholder="Enter book title" />
@@ -14,15 +15,28 @@
 
     <label>
       <span>Author</span>
-      <input type="text" formControlName="author" placeholder="Enter author name" />
+      <input type="text" formControlName="author"
+             list="bu-authors-list"
+             placeholder="Enter or select author"
+             autocomplete="off" />
+      <datalist id="bu-authors-list">
+        @for (a of authors(); track a) {
+          <option [value]="a"></option>
+        }
+      </datalist>
     </label>
 
     <label>
       <span>Category</span>
-      <select formControlName="category">
-        <option value="Technical">Technical</option>
-        <option value="Self Improvement">Self Improvement</option>
-      </select>
+      <input type="text" formControlName="category"
+             list="bu-categories-list"
+             placeholder="Enter or select category"
+             autocomplete="off" />
+      <datalist id="bu-categories-list">
+        @for (cat of categories(); track cat) {
+          <option [value]="cat"></option>
+        }
+      </datalist>
     </label>
 
     <label>
@@ -30,12 +44,7 @@
       <input type="file" (change)="onFileChange($event, 'image')" accept="image/*" />
     </label>
 
-    <label>
-      <span>Book PDF/File</span>
-      <input type="file" (change)="onFileChange($event, 'file')" accept=".pdf,.doc,.docx" />
-    </label>
-
-    <button type="submit" >Upload Book</button>
+    <button type="submit">Upload Book</button>
   </form>
 </div>
 
