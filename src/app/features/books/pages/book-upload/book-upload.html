@@ -41,7 +41,11 @@
 
     <label>
       <span>Description</span>
-      <textarea formControlName="description" rows="3" placeholder="Brief description of the book…"></textarea>
+      <quill-editor
+        formControlName="description"
+        placeholder="Write a description for this book…"
+        class="description-editor"
+      ></quill-editor>
     </label>
 
     <label>

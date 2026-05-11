@@ -3,13 +3,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NgIf } from '@angular/common';
 import { Apollo } from 'apollo-angular';
+import { QuillModule } from 'ngx-quill';
 
 import { BookService } from '../../services/book-service';
 import { CATEGORIES_QUERY, AUTHORS_QUERY } from '../../../../core/graphql/operations';
 
 @Component({
   selector: 'app-book-upload',
-  imports: [ReactiveFormsModule, RouterLink, NgIf],
+  imports: [ReactiveFormsModule, RouterLink, NgIf, QuillModule],
   templateUrl: './book-upload.html',
   styleUrls: ['./book-upload.scss'],
 })

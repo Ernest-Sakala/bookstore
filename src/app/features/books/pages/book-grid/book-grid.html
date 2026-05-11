@@ -29,28 +29,57 @@
   <!-- Books section -->
   <section class="books-section">
     <div class="section-header">
-      <h2>All Books</h2>
-      <span class="book-count">{{ totalElements() }} title{{ totalElements() === 1 ? '' : 's' }}</span>
+      <div class="section-header-left">
+        <h2>
+          @if (selectedCategory()) {
+            {{ selectedCategory() }}
+          } @else {
+            All Books
+          }
+        </h2>
+        <span class="book-count">
+          {{ totalElements() }} {{ totalElements() === 1 ? 'title' : 'titles' }}
+          @if (searchTerm()) {
+            for &ldquo;{{ searchTerm() }}&rdquo;
+          }
+        </span>
+      </div>
+
+      <!-- Active filter chip -->
+      @if (selectedCategory()) {
+        <div class="active-filter">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 3h10M3 6h6M5 9h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          {{ selectedCategory() }}
+          <button class="clear-filter" (click)="onCategoryChange('')" title="Clear category filter">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2 2l6 6M8 2L2 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      }
     </div>
 
-    <!-- Category filter -->
-    <div class="filter-bar">
-      <div class="category-filter">
-        <svg class="filter-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
-        <select
-          [ngModel]="selectedCategory()"
-          (ngModelChange)="onCategoryChange($event)"
-          class="category-select"
-        >
-          <option value="">All Categories</option>
+    <!-- Category pills -->
+    @if (categories().length > 0) {
+      <div class="filter-bar">
+        <div class="category-pills">
+          <button
+            class="pill"
+            [class.pill-active]="selectedCategory() === ''"
+            (click)="onCategoryChange('')"
+          >All</button>
           @for (cat of categories(); track cat) {
-            <option [value]="cat">{{ cat }}</option>
+            <button
+              class="pill"
+              [class.pill-active]="selectedCategory() === cat"
+              (click)="onCategoryChange(cat)"
+            >{{ cat }}</button>
           }
-        </select>
+        </div>
       </div>
-    </div>
+    }
 
     @if (loading()) {
       <div class="grid">
@@ -94,6 +123,9 @@
               <div class="card-body">
                 <h3 class="card-title">{{ book.title }}</h3>
                 <p class="card-author">{{ book.author }}</p>
+                @if (book.price != null) {
+                  <p class="card-price">K {{ book.price | number:'1.2-2' }}</p>
+                }
               </div>
               <div class="card-footer">
                 <a class="btn-details" [routerLink]="['/books', book.id]">View Details</a>

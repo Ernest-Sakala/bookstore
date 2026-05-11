@@ -64,6 +64,7 @@
           <div class="description">
             <h3>About this book</h3>
             <p>{{ book()!.description }}</p>
+            <p>{{ stripHtml(book()!.description) }}</p>
           </div>
         }
 

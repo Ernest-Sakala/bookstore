@@ -224,7 +224,11 @@
             <div class="field">
               <label>Description</label>
               <div class="input-group">
-                <textarea formControlName="description" rows="3" placeholder="Brief description of the book…"></textarea>
+                <quill-editor
+                  formControlName="description"
+                  placeholder="Write a description for this book…"
+                  class="description-editor"
+                ></quill-editor>
               </div>
             </div>
 
@@ -312,12 +316,14 @@
                   <th>Title</th>
                   <th>Author</th>
                   <th>Category</th>
+                  <th>Price</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 @for (book of books(); track book.id) {
-                  <tr>
+                  <!-- Book row -->
+                  <tr [class.row-editing]="editingBook()?.id === book.id">
                     <td class="td-cover">
                       <img
                         [src]="'http://localhost:8080/uploads/images/' + book.imageSlug"
@@ -326,11 +332,22 @@
                     </td>
                     <td class="td-title">{{ book.title }}</td>
                     <td class="td-muted">{{ book.author }}</td>
-                    <td>
-                      <span class="cat-badge">{{ book.category }}</span>
-                    </td>
+                    <td><span class="cat-badge">{{ book.category }}</span></td>
+                    <td class="td-muted">{{ book.price != null ? ('K' + (book.price | number:'1.2-2')) : '—' }}</td>
                     <td>
                       <div class="action-btns">
+                        <button class="btn-action edit" title="Edit"
+                          (click)="editingBook()?.id === book.id ? cancelEditBook() : openEditBook(book)">
+                          @if (editingBook()?.id === book.id) {
+                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                              <path d="M3 3l9 9M12 3L3 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                            </svg>
+                          } @else {
+                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                              <path d="M10.5 2.5a1.414 1.414 0 0 1 2 2L5 12H3v-2L10.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                          }
+                        </button>
                         <button class="btn-action delete" title="Delete" (click)="deleteBook(book)">
                           <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
                             <path d="M2.5 4h10M5.5 4V2.5h4V4M6.5 7v4M8.5 7v4M3.5 4l.5 8.5a1 1 0 0 0 1 .5h5a1 1 0 0 0 1-.5L12 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -339,6 +356,135 @@
                       </div>
                     </td>
                   </tr>
+
+                  <!-- Inline edit panel -->
+                  @if (editingBook()?.id === book.id) {
+                    <tr class="edit-row">
+                      <td colspan="6">
+                        <div class="edit-panel">
+                          <h4>Edit Book</h4>
+
+                          @if (editError()) {
+                            <div class="alert-error" style="margin-bottom:12px">
+                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/>
+                                <path d="M7 4.5v3M7 9.5h.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                              </svg>
+                              {{ editError() }}
+                            </div>
+                          }
+
+                          <form [formGroup]="editForm" (ngSubmit)="submitEditBook()" novalidate class="edit-form">
+
+                            <div class="edit-form-grid">
+
+                              <!-- Left: fields -->
+                              <div class="edit-fields">
+                                <div class="form-row">
+                                  <div class="field">
+                                    <label>Title</label>
+                                    <div class="input-group" [class.invalid]="editForm.get('title')!.invalid && editForm.get('title')!.touched">
+                                      <input type="text" formControlName="title" placeholder="Book title" />
+                                    </div>
+                                    @if (editForm.get('title')!.touched && editForm.get('title')!.errors?.['required']) {
+                                      <span class="field-error">Required.</span>
+                                    }
+                                  </div>
+                                  <div class="field">
+                                    <label>Author</label>
+                                    <div class="input-group" [class.invalid]="editForm.get('author')!.invalid && editForm.get('author')!.touched">
+                                      <input type="text" formControlName="author"
+                                             list="edit-authors-list" autocomplete="off" placeholder="Author name" />
+                                      <datalist id="edit-authors-list">
+                                        @for (a of authorsList(); track a) { <option [value]="a"></option> }
+                                      </datalist>
+                                    </div>
+                                    @if (editForm.get('author')!.touched && editForm.get('author')!.errors?.['required']) {
+                                      <span class="field-error">Required.</span>
+                                    }
+                                  </div>
+                                </div>
+
+                                <div class="form-row">
+                                  <div class="field">
+                                    <label>Category</label>
+                                    <div class="input-group" [class.invalid]="editForm.get('category')!.invalid && editForm.get('category')!.touched">
+                                      <input type="text" formControlName="category"
+                                             list="edit-categories-list" autocomplete="off" placeholder="Category" />
+                                      <datalist id="edit-categories-list">
+                                        @for (cat of categoriesList(); track cat) { <option [value]="cat"></option> }
+                                      </datalist>
+                                    </div>
+                                    @if (editForm.get('category')!.touched && editForm.get('category')!.errors?.['required']) {
+                                      <span class="field-error">Required.</span>
+                                    }
+                                  </div>
+                                  <div class="field">
+                                    <label>Price (ZMW)</label>
+                                    <div class="input-group price-wrap" [class.invalid]="editForm.get('price')!.invalid && editForm.get('price')!.touched">
+                                      <span class="price-symbol">K</span>
+                                      <input type="number" formControlName="price" placeholder="0.00" min="0" step="0.01" />
+                                    </div>
+                                    @if (editForm.get('price')!.touched && editForm.get('price')!.errors?.['required']) {
+                                      <span class="field-error">Required.</span>
+                                    }
+                                  </div>
+                                </div>
+
+                                <div class="field">
+                                  <label>Description</label>
+                                  <div class="input-group">
+                                    <quill-editor
+                                      formControlName="description"
+                                      placeholder="Write a description for this book…"
+                                      class="description-editor"
+                                    ></quill-editor>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Right: image -->
+                              <div class="edit-image-col">
+                                <label class="field-label">Cover Image <span class="optional">(optional — leave blank to keep current)</span></label>
+                                <label class="file-drop small" [class.has-file]="editForm.get('image')!.value || editImagePreview()">
+                                  <input type="file" accept="image/*" (change)="onEditFileChange($event)" hidden />
+                                  @if (editImagePreview()) {
+                                    <img [src]="editImagePreview()!" class="image-preview" alt="preview" />
+                                  } @else {
+                                    <div class="file-drop-inner">
+                                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <rect width="24" height="24" rx="6" fill="#f1f5f9"/>
+                                        <path d="M12 7v6M9 10l3-3 3 3" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M7 17h10" stroke="#94a3b8" stroke-width="1.4" stroke-linecap="round"/>
+                                      </svg>
+                                      <span>Click to replace image</span>
+                                    </div>
+                                  }
+                                </label>
+                              </div>
+
+                            </div><!-- /.edit-form-grid -->
+
+                            <div class="edit-actions">
+                              <button type="submit" class="btn-submit small" [disabled]="editSaving()">
+                                @if (editSaving()) { <span class="spinner"></span> Saving… }
+                                @else {
+                                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                  </svg>
+                                  Save Changes
+                                }
+                              </button>
+                              <button type="button" class="btn-cancel" (click)="cancelEditBook()" [disabled]="editSaving()">
+                                Cancel
+                              </button>
+                            </div>
+
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                  }
                 }
               </tbody>
             </table>
@@ -658,15 +804,48 @@
             <p>No categories yet. Add one above.</p>
           </div>
         } @else {
+          @if (categoryEditError()) {
+            <p class="inline-edit-error">{{ categoryEditError() }}</p>
+          }
           <div class="tag-list">
             @for (cat of categoriesList(); track cat) {
-              <div class="tag-item">
-                <span class="cat-badge">{{ cat }}</span>
-                <button class="btn-action delete" title="Delete category" (click)="deleteCategory(cat)">
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                    <path d="M2 3.5h9M4.5 3.5V2h4v1.5M5.5 6v3.5M7.5 6v3.5M3 3.5l.5 7a1 1 0 0 0 1 .5h4a1 1 0 0 0 1-.5l.5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
+              <div class="tag-item" [class.tag-item-editing]="editingCategory() === cat">
+
+                @if (editingCategory() === cat) {
+                  <!-- Inline rename input -->
+                  <input
+                    class="tag-edit-input"
+                    type="text"
+                    [ngModel]="editCategoryName()"
+                    (ngModelChange)="editCategoryName.set($event)"
+                    (keyup.enter)="submitEditCategory(cat)"
+                    (keyup.escape)="cancelEditCategory()"
+                    autofocus
+                  />
+                  <button class="btn-tag-save" title="Save" (click)="submitEditCategory(cat)">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2 6.5l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button class="btn-tag-cancel" title="Cancel" (click)="cancelEditCategory()">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2 2l9 9M11 2L2 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                } @else {
+                  <span class="cat-badge">{{ cat }}</span>
+                  <button class="btn-action edit" title="Rename" (click)="openEditCategory(cat)">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M9 2a1.414 1.414 0 0 1 2 2L4.5 10.5H2.5v-2L9 2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button class="btn-action delete" title="Delete" (click)="deleteCategory(cat)">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2 3.5h9M4.5 3.5V2h4v1.5M5.5 6v3.5M7.5 6v3.5M3 3.5l.5 7a1 1 0 0 0 1 .5h4a1 1 0 0 0 1-.5l.5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                }
+
               </div>
             }
           </div>
@@ -717,15 +896,47 @@
             <p>No authors yet. Add one above.</p>
           </div>
         } @else {
+          @if (authorEditError()) {
+            <p class="inline-edit-error">{{ authorEditError() }}</p>
+          }
           <div class="tag-list">
             @for (author of authorsList(); track author) {
-              <div class="tag-item">
-                <span class="author-tag">{{ author }}</span>
-                <button class="btn-action delete" title="Delete author" (click)="deleteAuthor(author)">
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                    <path d="M2 3.5h9M4.5 3.5V2h4v1.5M5.5 6v3.5M7.5 6v3.5M3 3.5l.5 7a1 1 0 0 0 1 .5h4a1 1 0 0 0 1-.5l.5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
+              <div class="tag-item" [class.tag-item-editing]="editingAuthor() === author">
+
+                @if (editingAuthor() === author) {
+                  <input
+                    class="tag-edit-input"
+                    type="text"
+                    [ngModel]="editAuthorName()"
+                    (ngModelChange)="editAuthorName.set($event)"
+                    (keyup.enter)="submitEditAuthor(author)"
+                    (keyup.escape)="cancelEditAuthor()"
+                    autofocus
+                  />
+                  <button class="btn-tag-save" title="Save" (click)="submitEditAuthor(author)">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2 6.5l3 3 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button class="btn-tag-cancel" title="Cancel" (click)="cancelEditAuthor()">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2 2l9 9M11 2L2 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                } @else {
+                  <span class="author-tag">{{ author }}</span>
+                  <button class="btn-action edit" title="Rename" (click)="openEditAuthor(author)">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M9 2a1.414 1.414 0 0 1 2 2L4.5 10.5H2.5v-2L9 2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                  <button class="btn-action delete" title="Delete" (click)="deleteAuthor(author)">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                      <path d="M2 3.5h9M4.5 3.5V2h4v1.5M5.5 6v3.5M7.5 6v3.5M3 3.5l.5 7a1 1 0 0 0 1 .5h4a1 1 0 0 0 1-.5l.5-7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                }
+
               </div>
             }
           </div>

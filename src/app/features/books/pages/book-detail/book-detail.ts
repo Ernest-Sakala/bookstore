@@ -70,4 +70,13 @@ export class BookDetail implements OnInit {
       },
     });
   }
+
+
+  stripHtml(html: string | undefined): string {
+    const div = document.createElement('div');
+    if (html != null) {
+      div.innerHTML = html;
+    }
+    return div.textContent || div.innerText || '';
+  }
 }

@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient } from '@angular/common/http';
 import { provideApollo } from 'apollo-angular';
+import { provideQuillConfig } from 'ngx-quill';
 import { ApolloLink, InMemoryCache } from '@apollo/client/core';
 import UploadHttpLink from 'apollo-upload-client/UploadHttpLink.mjs';
 
@@ -29,6 +30,16 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(),
+    provideQuillConfig({
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          ['link'],
+          ['clean'],
+        ],
+      },
+    }),
     provideApollo(() => ({
       link: authLink.concat(uploadLink),
       cache: new InMemoryCache(),

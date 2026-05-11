@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angu
 import { Router } from '@angular/router';
 import { DecimalPipe, DatePipe, NgClass } from '@angular/common';
 import { Apollo } from 'apollo-angular';
+import { QuillModule } from 'ngx-quill';
 import Swal from 'sweetalert2';
 
 import { AuthService } from '../../../core/service/auth';
@@ -20,10 +21,13 @@ import {
   DELETE_USER_MUTATION,
   CATEGORIES_QUERY,
   ADD_CATEGORY_MUTATION,
+  UPDATE_CATEGORY_MUTATION,
   DELETE_CATEGORY_MUTATION,
   AUTHORS_QUERY,
   ADD_AUTHOR_MUTATION,
+  UPDATE_AUTHOR_MUTATION,
   DELETE_AUTHOR_MUTATION,
+  UPDATE_BOOK_MUTATION,
 } from '../../../core/graphql/operations';
 
 export interface OrderItem {
@@ -50,7 +54,7 @@ export const ORDER_STATUSES = ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [AdminNavbar, Sidebar, ReactiveFormsModule, FormsModule, DecimalPipe, DatePipe, NgClass, Pagination],
+  imports: [AdminNavbar, Sidebar, ReactiveFormsModule, FormsModule, DecimalPipe, DatePipe, NgClass, Pagination, QuillModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   standalone: true,
@@ -89,6 +93,20 @@ export class AdminDashboard implements OnInit {
   uploadError   = signal('');
   imagePreview  = signal<string | null>(null);
 
+  /* ── Edit book ── */
+  editingBook   = signal<Book | null>(null);
+  editForm = this.fb.group({
+    title:       ['', Validators.required],
+    author:      ['', Validators.required],
+    category:    ['', Validators.required],
+    price:       [null as number | null, [Validators.required, Validators.min(0)]],
+    description: [''],
+    image:       [null as File | null],
+  });
+  editImagePreview = signal<string | null>(null);
+  editSaving   = signal(false);
+  editError    = signal('');
+
   /* ── Orders ── */
   orders          = signal<Order[]>([]);
   ordersLoading   = signal(false);
@@ -106,11 +124,17 @@ export class AdminDashboard implements OnInit {
   categoriesList    = signal<string[]>([]);
   categoriesLoading = signal(false);
   newCategory       = signal('');
+  editingCategory   = signal<string | null>(null);
+  editCategoryName  = signal('');
+  categoryEditError = signal('');
 
   /* ── Authors (FR19) ── */
   authorsList    = signal<string[]>([]);
   authorsLoading = signal(false);
   newAuthor      = signal('');
+  editingAuthor  = signal<string | null>(null);
+  editAuthorName = signal('');
+  authorEditError = signal('');
 
   ngOnInit() {
     this.loadBooks();
@@ -210,6 +234,66 @@ export class AdminDashboard implements OnInit {
         },
         error: (err) => Swal.fire('Error', err.message, 'error'),
       });
+    });
+  }
+
+  /* ── Edit book ── */
+  openEditBook(book: Book) {
+    this.editingBook.set(book);
+    this.editForm.patchValue({
+      title:       book.title,
+      author:      book.author,
+      category:    book.category,
+      price:       book.price ?? null,
+      description: book.description ?? '',
+      image:       null,
+    });
+    this.editImagePreview.set(
+      book.imageSlug ? `http://localhost:8080/uploads/images/${book.imageSlug}` : null
+    );
+    this.editError.set('');
+  }
+
+  cancelEditBook() {
+    this.editingBook.set(null);
+    this.editImagePreview.set(null);
+    this.editError.set('');
+  }
+
+  onEditFileChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    this.editForm.patchValue({ image: file });
+    const reader = new FileReader();
+    reader.onload = () => this.editImagePreview.set(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  submitEditBook() {
+    if (this.editForm.invalid) { this.editForm.markAllAsTouched(); return; }
+    const book = this.editingBook();
+    if (!book) return;
+    this.editSaving.set(true);
+    this.editError.set('');
+    const { title, author, category, price, description, image } = this.editForm.getRawValue();
+    this.apollo.mutate<{ updateBook: Book }>({
+      mutation: UPDATE_BOOK_MUTATION,
+      variables: { id: book.id, title, author, category, price, description, image: image ?? null },
+    }).subscribe({
+      next: (res) => {
+        this.editSaving.set(false);
+        const updated = res.data?.updateBook;
+        if (updated) {
+          this.books.update(list => list.map(b => b.id === updated.id ? { ...b, ...updated } : b));
+        }
+        this.cancelEditBook();
+        Swal.fire({ title: 'Book updated', icon: 'success', timer: 1400, showConfirmButton: false });
+      },
+      error: (err) => {
+        this.editSaving.set(false);
+        this.editError.set(err.graphQLErrors?.[0]?.message ?? err.message ?? 'Update failed.');
+      },
     });
   }
 
@@ -368,6 +452,35 @@ export class AdminDashboard implements OnInit {
     });
   }
 
+  openEditCategory(name: string) {
+    this.editingCategory.set(name);
+    this.editCategoryName.set(name);
+    this.categoryEditError.set('');
+  }
+
+  cancelEditCategory() {
+    this.editingCategory.set(null);
+    this.editCategoryName.set('');
+    this.categoryEditError.set('');
+  }
+
+  submitEditCategory(oldName: string) {
+    const newName = this.editCategoryName().trim();
+    if (!newName) return;
+    if (newName === oldName) { this.cancelEditCategory(); return; }
+    this.apollo.mutate<{ updateCategory: string }>({
+      mutation: UPDATE_CATEGORY_MUTATION,
+      variables: { oldName, newName },
+    }).subscribe({
+      next: (res) => {
+        const updated = res.data?.updateCategory ?? newName;
+        this.categoriesList.update(list => list.map(c => c === oldName ? updated : c));
+        this.cancelEditCategory();
+      },
+      error: (err) => this.categoryEditError.set(err.graphQLErrors?.[0]?.message ?? err.message),
+    });
+  }
+
   deleteCategory(name: string) {
     Swal.fire({
       title: `Delete category "${name}"?`,
@@ -416,6 +529,35 @@ export class AdminDashboard implements OnInit {
         this.newAuthor.set('');
       },
       error: (err) => Swal.fire('Error', err.graphQLErrors?.[0]?.message ?? err.message, 'error'),
+    });
+  }
+
+  openEditAuthor(name: string) {
+    this.editingAuthor.set(name);
+    this.editAuthorName.set(name);
+    this.authorEditError.set('');
+  }
+
+  cancelEditAuthor() {
+    this.editingAuthor.set(null);
+    this.editAuthorName.set('');
+    this.authorEditError.set('');
+  }
+
+  submitEditAuthor(oldName: string) {
+    const newName = this.editAuthorName().trim();
+    if (!newName) return;
+    if (newName === oldName) { this.cancelEditAuthor(); return; }
+    this.apollo.mutate<{ updateAuthor: string }>({
+      mutation: UPDATE_AUTHOR_MUTATION,
+      variables: { oldName, newName },
+    }).subscribe({
+      next: (res) => {
+        const updated = res.data?.updateAuthor ?? newName;
+        this.authorsList.update(list => list.map(a => a === oldName ? updated : a));
+        this.cancelEditAuthor();
+      },
+      error: (err) => this.authorEditError.set(err.graphQLErrors?.[0]?.message ?? err.message),
     });
   }
 

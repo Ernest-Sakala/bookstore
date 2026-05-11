@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { Apollo } from 'apollo-angular';
@@ -14,7 +15,7 @@ const PAGE_SIZE = 8;
 
 @Component({
   selector: 'app-book-grid',
-  imports: [Navbar, RouterLink, Pagination, FormsModule],
+  imports: [Navbar, RouterLink, Pagination, FormsModule, DecimalPipe],
   templateUrl: './book-grid.html',
   styleUrl: './book-grid.scss',
   standalone: true,

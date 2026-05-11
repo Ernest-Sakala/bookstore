@@ -52,6 +52,18 @@ export const BOOKS_QUERY = gql`
   }
 `;
 
+export const UPDATE_BOOK_MUTATION = gql`
+  mutation UpdateBook(
+    $id: ID!, $title: String, $author: String, $category: String,
+    $price: Float, $description: String, $image: Upload
+  ) {
+    updateBook(id: $id, title: $title, author: $author, category: $category,
+               price: $price, description: $description, image: $image) {
+      id title author category price description imageSlug
+    }
+  }
+`;
+
 export const CATEGORIES_QUERY = gql`
   query Categories {
     categories
@@ -304,6 +316,12 @@ export const ADD_CATEGORY_MUTATION = gql`
   }
 `;
 
+export const UPDATE_CATEGORY_MUTATION = gql`
+  mutation UpdateCategory($oldName: String!, $newName: String!) {
+    updateCategory(oldName: $oldName, newName: $newName)
+  }
+`;
+
 export const DELETE_CATEGORY_MUTATION = gql`
   mutation DeleteCategory($name: String!) {
     deleteCategory(name: $name)
@@ -314,6 +332,12 @@ export const DELETE_CATEGORY_MUTATION = gql`
 export const ADD_AUTHOR_MUTATION = gql`
   mutation AddAuthor($name: String!) {
     addAuthor(name: $name)
+  }
+`;
+
+export const UPDATE_AUTHOR_MUTATION = gql`
+  mutation UpdateAuthor($oldName: String!, $newName: String!) {
+    updateAuthor(oldName: $oldName, newName: $newName)
   }
 `;
 

@@ -7,5 +7,66 @@ html {
   padding: 0;
 }
 
-
 @import "@fortawesome/fontawesome-free/css/all.min.css";
+
+/* ── Quill rich-text editor — PageTurn theme ─────────────────── */
+.description-editor {
+  display: block;
+  width: 100%;
+
+  .ql-toolbar {
+    border: 1.5px solid #e2e8f0;
+    border-bottom: none;
+    border-radius: 10px 10px 0 0;
+    background: #f8fafc;
+    padding: 6px 10px;
+
+    .ql-stroke          { stroke: #6b7280; }
+    .ql-fill            { fill:   #6b7280; }
+    .ql-picker-label    { color:  #6b7280; }
+
+    button:hover .ql-stroke,
+    button.ql-active .ql-stroke  { stroke: #6366f1; }
+    button:hover .ql-fill,
+    button.ql-active .ql-fill    { fill:   #6366f1; }
+    button.ql-active             { color:  #6366f1; }
+  }
+
+  .ql-container {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 0 0 10px 10px;
+    font-family: "Segoe UI", Calibri, Arial, sans-serif;
+    font-size: 0.9rem;
+    background: #fff;
+    min-height: 130px;
+
+    &:focus-within {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+  }
+
+  .ql-editor {
+    min-height: 120px;
+    line-height: 1.65;
+    color: #1f2937;
+    padding: 12px 14px;
+
+    &.ql-blank::before {
+      color: #94a3b8;
+      font-style: normal;
+    }
+
+    p        { margin: 0 0 6px; }
+    ul, ol   { padding-left: 20px; margin: 4px 0; }
+    a        { color: #6366f1; }
+  }
+}
+
+/* Toolbar sits above container — keep border flush when inside .input-group */
+.input-group .description-editor .ql-toolbar {
+  border-radius: 10px 10px 0 0;
+}
+.input-group .description-editor .ql-container {
+  border-radius: 0 0 10px 10px;
+}

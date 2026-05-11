@@ -7,7 +7,6 @@ import { HttpHeaders } from '@angular/common/http';
 export function apolloOptionsFactory() {
   const httpLink = inject(HttpLink);
 
-  // 🔐 Auth link (replaces deprecated setContext)
   const authLink = new ApolloLink((operation, forward) => {
     const raw = localStorage.getItem('bookstore_user');
     const user = raw ? JSON.parse(raw) : null;
